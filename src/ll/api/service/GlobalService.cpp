@@ -151,12 +151,11 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
     ::ServerInstance& ins
 ) {
     ll::Global<Level>.init(ll::Global<Minecraft>->getLevel());
-    ll::Global<MoreDimensionManager>.init(new MoreDimensionManager());
+    ll::Global<MoreDimensionManager>.init(&MoreDimensionManager::getInstance());
     origin(ins);
 }
 LL_AUTO_INSTANCE_HOOK(LevelDestructor, HookPriority::High, "??1Level@@UEAA@XZ", void) {
     ll::Global<Level>.init(nullptr);
-    ll::Global<MoreDimensionManager>->~MoreDimensionManager();
     ll::Global<MoreDimensionManager>.init(nullptr);
     origin();
 }
