@@ -34,8 +34,7 @@ concept IsGlobalService = concepts::IsOneOf<
     RakNet::RakPeer,
     NetworkSystem,
     ResourcePackRepository,
-    CommandRegistry,
-    MoreDimensionManager>;
+    CommandRegistry>;
 
 template <IsGlobalService T>
 class GlobalService {
