@@ -1,3 +1,4 @@
+#pragma once
 #include "mc/_HeaderOutputPredefine.h"
 #include "mc/world/item/registry/ItemStack.h"
 
