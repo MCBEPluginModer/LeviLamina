@@ -4,12 +4,11 @@
 
 #include "mc/network/MinecraftPackets.h"
 #include "mc/network/packet/Packet.h"
-#include "mc/server/ServerInstance.h"
-#include "mc/world/Minecraft.h"
 #include <filesystem>
 
+#include "ll/api/io/FileUtils.h"
 #include "ll/api/memory/Hook.h"
-#include "ll/api/utils/FileUtils.h"
+#include "ll/api/utils/StringUtils.h"
 #include "ll/core/LeviLamina.h"
 #include "ll/core/Version.h"
 
@@ -61,26 +60,6 @@ inline void forEachPacket(std::function<void(Packet const& packet, std::string c
     }
 }
 
-inline bool replaceString(
-    std::string&       content,
-    std::string const& start,
-    std::string const& end,
-    std::string const& str,
-    size_t             offset  = 0,
-    bool               exclude = true
-) {
-    auto startOffset = content.find(start, offset);
-    if (startOffset == std::string::npos) return false;
-    if (exclude) startOffset += start.size();
-    auto endOffset = end.empty() ? std::string::npos : content.find(end, startOffset);
-
-    if (endOffset != std::string::npos && !exclude) {
-        endOffset += end.size();
-    }
-    content.replace(startOffset, endOffset - startOffset, str);
-    return true;
-}
-
 void autoGenerate() {
 
     std::string path = __FILE__;
@@ -89,50 +68,46 @@ void autoGenerate() {
         path = LL_WORKSPACE_FOLDER + path;
     }
 
-    auto file = ll::utils::file_utils::readAllFile(path, false);
+    auto file = ll::file_utils::readFile(path);
     if (!file) {
         ll::logger.error("Couldn't open file {}", path);
         return;
     }
-    auto& content = file.value();
+    auto& content = *file;
 
     std::ostringstream oss;
 
     // add static assert
     oss << std::endl;
+    oss << std::endl;
     forEachPacket([&](Packet const&, std::string className, size_t size) {
         oss << fmt::format("PACKET_SIZE_ASSERT({}, 0x{:X});\n", className, size);
     });
     oss << std::endl;
-    replaceString(content, "#pragma region PacketSizeAssert\n", "#pragma endregion", oss.str());
+    ll::string_utils::replaceContent(content, "\n#pragma region PacketSizeAssert", "#pragma endregion", oss.str());
 
     oss.clear();
     oss.str("");
 
     // add include
     oss << std::endl;
+    oss << std::endl;
     forEachPacket([&](Packet const&, std::string className, size_t) {
         oss << fmt::format("#include \"mc/network/packet/{}.h\"\n", className);
     });
     oss << std::endl;
-    replaceString(content, "#pragma region PacketInclude\n", "#pragma endregion", oss.str());
+    ll::string_utils::replaceContent(content, "\n#pragma region PacketInclude", "#pragma endregion", oss.str());
     oss.clear();
     oss.str("");
 
-    ll::utils::file_utils::WriteAllFile(path, content, false);
+    if (!ll::file_utils::writeFile(path, content)) {
+        ll::logger.error("Couldn't write file {}", path);
+    }
 }
 
-LL_AUTO_TYPED_INSTANCE_HOOK(
-    PacketTestInit,
-    HookPriority::Normal,
-    ServerInstance,
-    &ServerInstance::startServerThread,
-    void
-) {
-    origin();
+LL_AUTO_STATIC_HOOK(GeneratePacketHook, HookPriority::Normal, "main", int, int a, char* c) {
     autoGenerate();
-
-    // forEachPacket([&](Packet const&, std::string, size_t) {});
+    return origin(a, c);
 }
 
 #endif // GENERATE_PACKET
@@ -187,7 +162,6 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 #include "mc/network/packet/ContainerSetDataPacket.h"
 #include "mc/network/packet/CorrectPlayerMovePredictionPacket.h"
 #include "mc/network/packet/CraftingDataPacket.h"
-#include "mc/network/packet/CraftingEventPacket.h"
 #include "mc/network/packet/CreatePhotoPacket.h"
 #include "mc/network/packet/CreativeContentPacket.h"
 #include "mc/network/packet/DeathInfoPacket.h"
@@ -259,6 +233,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 #include "mc/network/packet/PlayerListPacket.h"
 #include "mc/network/packet/PlayerSkinPacket.h"
 #include "mc/network/packet/PlayerStartItemCooldownPacket.h"
+#include "mc/network/packet/PlayerToggleCrafterSlotRequestPacket.h"
 #include "mc/network/packet/PositionTrackingDBClientRequestPacket.h"
 #include "mc/network/packet/PositionTrackingDBServerBroadcastPacket.h"
 #include "mc/network/packet/PurchaseReceiptPacket.h"
@@ -294,6 +269,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 #include "mc/network/packet/SetLastHurtByPacket.h"
 #include "mc/network/packet/SetLocalPlayerAsInitializedPacket.h"
 #include "mc/network/packet/SetPlayerGameTypePacket.h"
+#include "mc/network/packet/SetPlayerInventoryOptionsPacket.h"
 #include "mc/network/packet/SetScorePacket.h"
 #include "mc/network/packet/SetScoreboardIdentityPacket.h"
 #include "mc/network/packet/SetSpawnPositionPacket.h"
@@ -392,7 +368,6 @@ PACKET_SIZE_ASSERT(InventoryContentPacket, 0x50);
 PACKET_SIZE_ASSERT(InventorySlotPacket, 0x98);
 PACKET_SIZE_ASSERT(ContainerSetDataPacket, 0x40);
 PACKET_SIZE_ASSERT(CraftingDataPacket, 0x98);
-PACKET_SIZE_ASSERT(CraftingEventPacket, 0x78);
 PACKET_SIZE_ASSERT(GuiDataPickItemPacket, 0x78);
 PACKET_SIZE_ASSERT(BlockActorDataPacket, 0x58);
 PACKET_SIZE_ASSERT(PlayerInputPacket, 0x40);
@@ -429,9 +404,9 @@ PACKET_SIZE_ASSERT(StopSoundPacket, 0x58);
 PACKET_SIZE_ASSERT(SetTitlePacket, 0xA8);
 PACKET_SIZE_ASSERT(AddBehaviorTreePacket, 0x50);
 PACKET_SIZE_ASSERT(StructureBlockUpdatePacket, 0xF8);
-PACKET_SIZE_ASSERT(ShowStoreOfferPacket, 0x78);
+PACKET_SIZE_ASSERT(ShowStoreOfferPacket, 0x48);
 PACKET_SIZE_ASSERT(PurchaseReceiptPacket, 0x48);
-PACKET_SIZE_ASSERT(PlayerSkinPacket, 0x2D0);
+PACKET_SIZE_ASSERT(PlayerSkinPacket, 0x2E0);
 PACKET_SIZE_ASSERT(SubClientLoginPacket, 0x38);
 PACKET_SIZE_ASSERT(AutomationClientConnectPacket, 0x50);
 PACKET_SIZE_ASSERT(SetLastHurtByPacket, 0x38);
@@ -530,7 +505,7 @@ PACKET_SIZE_ASSERT(RequestNetworkSettingsPacket, 0x38);
 PACKET_SIZE_ASSERT(GameTestRequestPacket, 0x90);
 PACKET_SIZE_ASSERT(GameTestResultsPacket, 0x78);
 PACKET_SIZE_ASSERT(UpdateClientInputLocksPacket, 0x40);
-PACKET_SIZE_ASSERT(CameraPresetsPacket, 0x60);
+PACKET_SIZE_ASSERT(CameraPresetsPacket, 0x68);
 PACKET_SIZE_ASSERT(UnlockedRecipesPacket, 0x50);
 PACKET_SIZE_ASSERT(CameraInstructionPacket, 0xA0);
 PACKET_SIZE_ASSERT(CompressedBiomeDefinitionListPacket, 0x48);
@@ -538,5 +513,7 @@ PACKET_SIZE_ASSERT(TrimDataPacket, 0x60);
 PACKET_SIZE_ASSERT(OpenSignPacket, 0x40);
 PACKET_SIZE_ASSERT(AgentAnimationPacket, 0x40);
 PACKET_SIZE_ASSERT(RefreshEntitlementsPacket, 0x30);
+PACKET_SIZE_ASSERT(PlayerToggleCrafterSlotRequestPacket, 0x48);
+PACKET_SIZE_ASSERT(SetPlayerInventoryOptionsPacket, 0x48);
 
 #pragma endregion

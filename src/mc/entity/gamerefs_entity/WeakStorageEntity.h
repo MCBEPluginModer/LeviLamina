@@ -5,6 +5,8 @@
 #include "mc/entity/EntityRegistryRefTraits.h"
 #include "mc/entity/gamerefs_entity/StackResultStorageEntity.h"
 
+class Actor;
+
 class WeakStorageEntity {
 public:
     // WeakStorageEntity inner types define
@@ -19,8 +21,8 @@ public:
     WeakRefT<EntityRegistryRefTraits> mRegistry;
     class EntityId                    mEntity;
 
-    template <class Entity, bool IncludeRemoved = false>
-    [[nodiscard]] constexpr Entity* tryUnwrap() {
+    template <class Entity = Actor, bool IncludeRemoved = false>
+    [[nodiscard]] optional_ref<Entity> tryUnwrap() const {
         return StackResultStorageEntity(*this).tryUnwrap<Entity, IncludeRemoved>();
     }
 
@@ -32,23 +34,23 @@ public:
 public:
     // NOLINTBEGIN
     // symbol: ??8WeakStorageEntity@@QEBA_NAEBV0@@Z
-    MCAPI bool operator==(class WeakStorageEntity const&) const;
+    MCAPI bool operator==(class WeakStorageEntity const& w) const;
 
     // NOLINTEND
 
     // protected:
     // NOLINTBEGIN
     // symbol: ??0WeakStorageEntity@@IEAA@AEBVOwnerStorageEntity@@@Z
-    MCAPI explicit WeakStorageEntity(class OwnerStorageEntity const&);
+    MCAPI explicit WeakStorageEntity(class OwnerStorageEntity const& ownerStorage);
 
     // symbol: ??0WeakStorageEntity@@IEAA@AEBVStackResultStorageEntity@@@Z
-    MCAPI explicit WeakStorageEntity(class StackResultStorageEntity const&);
+    MCAPI explicit WeakStorageEntity(class StackResultStorageEntity const& stackResultStorage);
 
     // symbol: ??0WeakStorageEntity@@IEAA@W4EmptyInit@0@@Z
     MCAPI explicit WeakStorageEntity(::WeakStorageEntity::EmptyInit);
 
     // symbol: ??0WeakStorageEntity@@IEAA@W4VariadicInit@0@AEBVEntityContext@@@Z
-    MCAPI WeakStorageEntity(::WeakStorageEntity::VariadicInit, class EntityContext const&);
+    MCAPI WeakStorageEntity(::WeakStorageEntity::VariadicInit, class EntityContext const& stackRef);
 
     // symbol: ?_isSet@WeakStorageEntity@@IEBA_NXZ
     MCAPI bool _isSet() const;

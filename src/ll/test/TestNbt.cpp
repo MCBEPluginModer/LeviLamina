@@ -8,6 +8,8 @@
 #include "mc/nbt/CompoundTag.h"
 #include "mc/server/ServerInstance.h"
 
+#include "nlohmann/json.hpp"
+
 using namespace ll::nbt_literals;
 
 LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &ServerInstance::startServerThread, void) {
@@ -15,23 +17,18 @@ LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &Serv
 
     auto nbt = CompoundTag{
         {
+         {"anull", nullptr},
          {"string?", R"(streee _ _o-ix 我超, utf8 "\asfa%"*)##q)$\\"\Q34\\""'':)"_tag},
-         {"num", 1_i},
-         {"nums", 3_s},
-         {"byte", 127_b},
-         {"list",
-             ListTag{
-                 5_b,
-                 ByteTag{true},
-                 ByteTag{false},
-                 ByteTag{-2},
-             }},
+         {"num", 1},
+         {"nums", 3i16},
+         {"byte", 127i8},
+         {"list", ListTag{5_b, ByteTag{true}, ByteTag{false}, -2_b}},
          {"compound",
              CompoundTag{{
-                 {"float", 0.1_f},
-                 {"long", 10000_l},
-                 {"double", 0.3_d},
-                 {"sdouble", 1.0_d},
+                 {"float", 0.1f},
+                 {"long", 10000ui64},
+                 {"double", 0.3},
+                 {"sdouble", 1.0},
              }}},
          {"bytearray", ByteArrayTag{{1, 2, 3, 4, 5, -2, -3, -6}}},
          {"intarray", IntArrayTag{{1, 2, 3, 4, 5, -2, -3, -6}}},
@@ -39,12 +36,20 @@ LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &Serv
     };
 
     nbt["some"]["new"]["compound"]          = nbt;
-    nbt["hello"]["789\xDB\xFE"]["\u123456"] = StringTag{std::string{R"(\n\t\r\b\u1234\uffffffff)"} + "\xDB\xFE"};
+    nbt["hello"]["789\xDB\xFE"]["\u123456"] = std::string{R"(\n\t\r\b\u1234\uffffffff)"} + "\xDB\xFE";
 
+
+    nlohmann::json j{
+        {"num",  1    },
+        {"nums", 3i16 },
+        {"byte", 127i8}
+    };
+    j["some"]["new"]["json"] = 2;
 
     auto nbt2 = *CompoundTag::fromSnbt(R"(
 
 {
+    anull = null,
     byte = 127b,
     bytearray = [B;1b, 2b, 3b, 4b, 5b, -2b, -3b, -6b],
     compound = {
@@ -67,6 +72,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &Serv
     some = {
         new = {              ; hi
             compound = {
+                anull = null,
                 "byte" = 127b
                 "bytearray" = [B;1b, 2b, 3b, 4b, 5b, -2b, -3b, -6b],  // orld   /**/ /*     34t */
                 "compound" = {
@@ -93,15 +99,27 @@ LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &Serv
 
     )");
 
+    CompoundTag nbt3;
+
+    nbt3["hello"]["world"] = ListTag{1.0, 2.0, 3.0};
+
+    nbt3["hello"]["world"][1] = 7.0_d;
+
+    nbt3["hello"][", "] = "world";
+
     auto lock = ll::Logger::lock();
+
+    ll::logger.debug("\n{}", nbt3["hello"][", "] == "world");
 
     ll::logger.debug("\n{}", nbt.toSnbt(SnbtFormat::Colored | SnbtFormat::Console | SnbtFormat::Jsonify));
 
     ll::logger.debug("\n{}", nbt2.toSnbt(SnbtFormat::PrettyConsolePrint));
 
+    ll::logger.debug("\n{}", nbt3.toSnbt(SnbtFormat::PrettyConsolePrint));
+
     ll::logger.debug(
         "\n{}",
-        ((StringTag*)(Tag::parseSnbt(StringTag{nbt2.toNetworkNBT()}.toSnbt()).get()))
+        ((StringTag*)(Tag::parseSnbt(StringTag{nbt2.toNetworkNbt()}.toSnbt()).get()))
             ->toSnbt(SnbtFormat::PrettyConsolePrint | SnbtFormat::ForceAscii)
     );
 
@@ -109,25 +127,26 @@ LL_AUTO_TYPED_INSTANCE_HOOK(NbtTest, HookPriority::Normal, ServerInstance, &Serv
 
     ll::logger.debug("\n{}", nbt.toSnbt() == nbt2.toSnbt());
 
-    ll::logger.debug("\n{}", nbt.toBinaryNBT() == nbt2.toBinaryNBT());
+    ll::logger.debug(
+        "\n{}",
+        *CompoundTag::fromBinaryNbt(nbt.toBinaryNbt()) == *CompoundTag::fromBinaryNbt(nbt2.toBinaryNbt())
+    );
+    ll::logger.debug("\n{}", nbt.toBinaryNbt() == nbt2.toBinaryNbt());
 
-    ll::logger.debug("\n{}", nbt.toNetworkNBT() == nbt2.toNetworkNBT());
+    ll::logger.debug(
+        "\n{}",
+        *CompoundTag::fromNetworkNbt(nbt.toNetworkNbt()) == *CompoundTag::fromNetworkNbt(nbt2.toNetworkNbt())
+    );
 
-    ll::logger.debug("\n{}", nbt.toNetworkNBT() == nbt.toNetworkNBT());
+    ll::logger.debug("\n{}", nbt.toNetworkNbt() == nbt2.toNetworkNbt());
 
-    ll::logger.debug("\n{}", nbt.toBinaryNBT() == nbt.toBinaryNBT());
 
     ll::logger.debug(ColorFormat::AQUA);
     ll::logger.debug(ColorFormat::MINECOIN_GOLD);
     ll::logger.debug(ColorFormat::LIGHT_PURPLE);
-    ll::logger.debug(ColorFormat::ColorFromColorCode(ColorFormat::AQUA)->toString());
-    ll::logger.debug(ColorFormat::ColorFromColorCode(ColorFormat::MINECOIN_GOLD)->toString());
-    ll::logger.debug(ColorFormat::ColorFromColorCode(ColorFormat::LIGHT_PURPLE)->toString());
-    ll::logger.debug(ColorFormat::ColorFromColorCode(ColorFormat::LIGHT_PURPLE)->toString());
-    ll::logger.debug("{}", ColorFormat::FormatCodeFromName("Bold"));
 
-    using namespace ll::utils::string_utils;
+    using namespace ll::string_utils;
 
     ll::logger.debug("\n{}", replaceAnsiToMcCode(nbt.toSnbt(SnbtFormat::Colored | SnbtFormat::Console)));
-    ll::logger.debug("\n{}", (nbt.toSnbt(SnbtFormat::Colored)));
+    ll::logger.debug("\n{}", (nbt2.toSnbt(SnbtFormat::Colored)));
 }

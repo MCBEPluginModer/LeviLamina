@@ -9,11 +9,11 @@
 #include "mc/common/wrapper/SharePtrRefTraits.h"
 #include "mc/common/wrapper/WeakRefT.h"
 #include "mc/deps/core/common/bedrock/NonOwnerPointer.h"
+#include "mc/entity/systems/common/CommandOriginSystem.h"
+#include "mc/entity/utilities/ActorInitializationMethod.h"
 #include "mc/enums/CurrentCmdVersion.h"
-#include "mc/enums/InitializationMethod.h"
 #include "mc/enums/SubClientId.h"
 #include "mc/world/level/Level.h"
-#include "mc/world/systems/CommandOriginSystem.h"
 
 // auto generated forward declare list
 // clang-format off
@@ -44,7 +44,7 @@ public:
     // symbol:
     // ?decrementTagCache@ServerLevel@@UEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAV?$TagRegistry@U?$IDType@ULevelTagIDType@@@@U?$IDType@ULevelTagSetIDType@@@@@@@Z
     MCVAPI void
-    decrementTagCache(std::string const&, class TagRegistry<struct IDType<struct LevelTagIDType>, struct IDType<struct LevelTagSetIDType>>&);
+    decrementTagCache(std::string const& tag, class TagRegistry<struct IDType<struct LevelTagIDType>, struct IDType<struct LevelTagSetIDType>>&);
 
     // symbol: ?getClientResourcePackManager@ServerLevel@@UEBAPEAVResourcePackManager@@XZ
     MCVAPI class ResourcePackManager* getClientResourcePackManager() const;
@@ -75,32 +75,44 @@ public:
 
     // symbol:
     // ?incrementTagCache@ServerLevel@@UEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAV?$TagRegistry@U?$IDType@ULevelTagIDType@@@@U?$IDType@ULevelTagSetIDType@@@@@@@Z
-    MCVAPI void
-    incrementTagCache(std::string const&, class TagRegistry<struct IDType<struct LevelTagIDType>, struct IDType<struct LevelTagSetIDType>>&);
+    MCVAPI void incrementTagCache(
+        std::string const&                                                                                tag,
+        class TagRegistry<struct IDType<struct LevelTagIDType>, struct IDType<struct LevelTagSetIDType>>& tagRegistry
+    );
 
     // symbol:
     // ?initialize@ServerLevel@@UEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVLevelSettings@@PEAVLevelData@@AEBVExperiments@@PEBV23@@Z
-    MCVAPI bool
-    initialize(std::string const&, class LevelSettings const&, class LevelData*, class Experiments const&, std::string const*);
+    MCVAPI bool initialize(
+        std::string const&         levelName,
+        class LevelSettings const& levelSettings,
+        class LevelData*           levelData,
+        class Experiments const&   experiments,
+        std::string const*         levelId
+    );
 
     // symbol: ?loadFunctionManager@ServerLevel@@UEAAXXZ
     MCVAPI void loadFunctionManager();
 
     // symbol: ?onChunkLoaded@ServerLevel@@UEAAXAEAVChunkSource@@AEAVLevelChunk@@@Z
-    MCVAPI void onChunkLoaded(class ChunkSource&, class LevelChunk&);
+    MCVAPI void onChunkLoaded(class ChunkSource& source, class LevelChunk& lc);
 
     // symbol: ?registerEventCoordinators@ServerLevel@@UEAAXXZ
     MCVAPI void registerEventCoordinators();
 
+    // symbol: ?runCommand@ServerLevel@@UEAAXAEAVCommand@@AEAVCommandOrigin@@W4CommandOriginSystem@@@Z
+    MCVAPI void runCommand(class Command& command, class CommandOrigin& origin, ::CommandOriginSystem originSystem);
+
     // symbol:
     // ?runCommand@ServerLevel@@UEAAXAEBVHashedString@@AEAVCommandOrigin@@W4CommandOriginSystem@@W4CurrentCmdVersion@@@Z
-    MCVAPI void runCommand(class HashedString const&, class CommandOrigin&, ::CommandOriginSystem, ::CurrentCmdVersion);
-
-    // symbol: ?runCommand@ServerLevel@@UEAAXAEAVCommand@@AEAVCommandOrigin@@W4CommandOriginSystem@@@Z
-    MCVAPI void runCommand(class Command&, class CommandOrigin&, ::CommandOriginSystem);
+    MCVAPI void runCommand(
+        class HashedString const& commandStr,
+        class CommandOrigin&      origin,
+        ::CommandOriginSystem     originSystem,
+        ::CurrentCmdVersion       commandVersion
+    );
 
     // symbol: ?setCommandsEnabled@ServerLevel@@UEAAX_N@Z
-    MCVAPI void setCommandsEnabled(bool);
+    MCVAPI void setCommandsEnabled(bool commandsEnabled);
 
     // symbol: ?setServerTickOffset@ServerLevel@@UEAAX_J@Z
     MCVAPI void setServerTickOffset(int64);
@@ -117,7 +129,7 @@ public:
     ServerLevel(Bedrock::NotNullNonOwnerPtr<class SoundPlayerInterface> const&, class OwnerPtrT<struct SharePtrRefTraits<class LevelStorage>>, class IMinecraftEventing&, class ResourcePackManager&, class ResourcePackManager&, Bedrock::NotNullNonOwnerPtr<class StructureManager>, class MinecraftCommands&, class Scheduler&, Bedrock::NotNullNonOwnerPtr<class IEntityRegistryOwner> const&, class WeakRefT<struct EntityRefTraits>, std::unique_ptr<class BlockComponentFactory>, std::unique_ptr<class BlockDefinitionGroup>, class ItemRegistryRef, bool, bool, struct NetworkPermissions const&, std::weak_ptr<class BlockTypeRegistry>);
 
     // symbol: ?clearAllGenerationRequests@ServerLevel@@QEAAXAEBVNetworkIdentifier@@W4SubClientId@@@Z
-    MCAPI void clearAllGenerationRequests(class NetworkIdentifier const&, ::SubClientId);
+    MCAPI void clearAllGenerationRequests(class NetworkIdentifier const& player, ::SubClientId clientId);
 
     // symbol: ?getCommandManager@ServerLevel@@QEAAAEAVCommandManager@@XZ
     MCAPI class CommandManager& getCommandManager();
@@ -138,7 +150,7 @@ public:
     MCAPI class DynamicProperties& getOrAddDynamicProperties();
 
     // symbol: ?setShouldSendSleepMessage@ServerLevel@@QEAAX_N@Z
-    MCAPI void setShouldSendSleepMessage(bool);
+    MCAPI void setShouldSendSleepMessage(bool shouldSend);
 
     // symbol: ?shouldSendSleepMessage@ServerLevel@@QEBA_NXZ
     MCAPI bool shouldSendSleepMessage() const;
@@ -163,22 +175,22 @@ public:
     MCAPI void _initializePlayerSleepManager();
 
     // symbol: ?_onActorEntityAdded@ServerLevel@@AEAAXAEAVActor@@@Z
-    MCAPI void _onActorEntityAdded(class Actor&);
+    MCAPI void _onActorEntityAdded(class Actor& actor);
 
     // symbol: ?_onGameplayUserAdded@ServerLevel@@AEAAXAEAVEntityContext@@@Z
-    MCAPI void _onGameplayUserAdded(class EntityContext&);
+    MCAPI void _onGameplayUserAdded(class EntityContext& entity);
 
     // symbol: ?_onGameplayUserRemoved@ServerLevel@@AEAAXAEAVEntityContext@@@Z
-    MCAPI void _onGameplayUserRemoved(class EntityContext&);
+    MCAPI void _onGameplayUserRemoved(class EntityContext& entity);
 
     // symbol: ?_onNewDimensionCreated@ServerLevel@@AEAAXAEAVDimension@@@Z
-    MCAPI void _onNewDimensionCreated(class Dimension&);
+    MCAPI void _onNewDimensionCreated(class Dimension& dimension);
 
     // symbol: ?_onPlayerWakeUp@ServerLevel@@AEAAXAEAVPlayer@@@Z
-    MCAPI void _onPlayerWakeUp(class Player&);
+    MCAPI void _onPlayerWakeUp(class Player& player);
 
     // symbol: ?_onRemoveActorEntityReferences@ServerLevel@@AEAAXAEAVActor@@@Z
-    MCAPI void _onRemoveActorEntityReferences(class Actor&);
+    MCAPI void _onRemoveActorEntityReferences(class Actor& actor);
 
     // symbol: ?_onSleepingPlayerListUpdated@ServerLevel@@AEAAXAEBUPlayerSleepStatus@@@Z
     MCAPI void _onSleepingPlayerListUpdated(struct PlayerSleepStatus const&);
@@ -186,8 +198,8 @@ public:
     // symbol: ?_onWakeUpAllPlayers@ServerLevel@@AEAAXXZ
     MCAPI void _onWakeUpAllPlayers();
 
-    // symbol: ?_postReloadActorAdded@ServerLevel@@AEAAXAEAVActor@@W4InitializationMethod@@@Z
-    MCAPI void _postReloadActorAdded(class Actor&, ::InitializationMethod);
+    // symbol: ?_postReloadActorAdded@ServerLevel@@AEAAXAEAVActor@@W4ActorInitializationMethod@@@Z
+    MCAPI void _postReloadActorAdded(class Actor&, ::ActorInitializationMethod);
 
     // NOLINTEND
 };

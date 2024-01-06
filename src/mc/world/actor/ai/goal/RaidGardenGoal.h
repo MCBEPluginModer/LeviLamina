@@ -32,15 +32,15 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@RaidGardenGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 11, symbol: ?isValidTarget@RaidGardenGoal@@UEAA_NAEAVBlockSource@@AEBVBlockPos@@@Z
-    virtual bool isValidTarget(class BlockSource&, class BlockPos const&);
+    virtual bool isValidTarget(class BlockSource& region, class BlockPos const& pos);
 
     // symbol:
     // ??0RaidGardenGoal@@QEAA@AEAVMob@@MHHHMHHHHAEBV?$vector@VBlockDescriptor@@V?$allocator@VBlockDescriptor@@@std@@@std@@@Z
     MCAPI
-    RaidGardenGoal(class Mob&, float, int, int, int, float, int, int, int, int, std::vector<class BlockDescriptor> const&);
+    RaidGardenGoal(class Mob& mob, float speedModifier, int searchRange, int searchHeight, int searchCount, float goalRadius, int maxToEat, int hasEatenFillDelay, int eatDelay, int initialEatDelay, std::vector<class BlockDescriptor> const&);
 
     // NOLINTEND
 };

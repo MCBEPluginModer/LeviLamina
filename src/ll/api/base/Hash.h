@@ -11,57 +11,39 @@ constexpr void hashCombine(T const& v, size_t& seed) {
     seed ^= v + 2654435769ui64 + (seed << 6ui64) + (seed >> 2ui64);
 }
 
-constexpr uint64 do_hash(std::string_view x) {
-    // ap hash
+[[nodiscard]] constexpr uint64 do_hash(std::string_view x) {
     uint64 rval = 0;
     for (size_t i = 0; i < x.size(); i++) {
-        if (i & 1) {
-            rval ^= (~((rval << 11) ^ x[i] ^ (rval >> 5)));
-        } else {
-            rval ^= (~((rval << 7) ^ x[i] ^ (rval >> 3)));
-        }
+        rval ^= (i & 1 == 0) ? (~((rval << 7) ^ x[i] ^ (rval >> 3))) : (~((rval << 11) ^ x[i] ^ (rval >> 5)));
     }
     return rval;
 }
 
-constexpr uint64 do_hash(char const* x) {
-    // ap hash
-    uint64 rval = 0;
-    for (size_t i = 0; x[i]; ++i) {
-        if (i & 1) {
-            rval ^= (~((rval << 11) ^ x[i] ^ (rval >> 5)));
-        } else {
-            rval ^= (~((rval << 7) ^ x[i] ^ (rval >> 3)));
-        }
+[[nodiscard]] constexpr uint64 do_hash2(std::string_view x) {
+    // hash_64_fnv1a
+    uint64           hash  = 0xcbf29ce484222325;
+    constexpr uint64 prime = 0x100000001b3;
+    for (char c : x) {
+        hash  = hash ^ c;
+        hash *= prime;
     }
-    return rval;
+    return hash;
 }
-constexpr uint64 do_hash(char const* x, size_t len) {
-    // ap hash
-    uint64 rval = 0;
-    for (size_t i = 0; i < len; ++i) {
-        if (i & 1) {
-            rval ^= (~((rval << 11) ^ x[i] ^ (rval >> 5)));
-        } else {
-            rval ^= (~((rval << 7) ^ x[i] ^ (rval >> 3)));
-        }
+
+[[nodiscard]] constexpr uint64 do_hash3(std::string_view x) {
+    uint64 rval = 5381;
+    for (char c : x) {
+        rval = ((rval << 5) + rval) + c;
     }
     return rval;
 }
 
-constexpr uint64 do_hash2(std::string_view x) {
-    // ap hash
-    uint64 rval = 0;
-    for (char i : x) {
-        rval *= 128;
-        rval += i;
-        rval += 4;
-    }
-    return rval;
+template <class T>
+[[nodiscard]] constexpr uint64 hashType(T const& v) {
+    return do_hash2({reinterpret_cast<char const*>(std::addressof(v)), sizeof(T)});
 }
-
 } // namespace ll::hash
 
 namespace ll::hash_literals {
-constexpr uint64 operator""_h(char const* x, size_t len) { return ll::hash::do_hash(x, len); }
+[[nodiscard]] constexpr uint64 operator""_h(char const* x, size_t len) { return ll::hash::do_hash({x, len}); }
 } // namespace ll::hash_literals

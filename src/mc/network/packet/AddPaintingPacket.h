@@ -35,17 +35,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@AddPaintingPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@AddPaintingPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0AddPaintingPacket@@QEAA@XZ
     MCAPI AddPaintingPacket();
 
     // symbol: ??0AddPaintingPacket@@QEAA@AEBVPainting@@@Z
-    MCAPI explicit AddPaintingPacket(class Painting const&);
+    MCAPI explicit AddPaintingPacket(class Painting const& painting);
 
     // NOLINTEND
 };

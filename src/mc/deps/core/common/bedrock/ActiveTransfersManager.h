@@ -60,20 +60,21 @@ public:
 
     // symbol:
     // ?dropBlobFor@ActiveTransfersManager@Server@ClientBlobCache@@QEAA?AV?$shared_ptr@VBlob@Server@ClientBlobCache@@@std@@AEBVNetworkIdentifier@@_K@Z
-    MCAPI std::shared_ptr<class ClientBlobCache::Server::Blob> dropBlobFor(class NetworkIdentifier const&, uint64);
+    MCAPI std::shared_ptr<class ClientBlobCache::Server::Blob>
+          dropBlobFor(class NetworkIdentifier const& client, uint64 id);
 
     // symbol: ?enableCacheFor@ActiveTransfersManager@Server@ClientBlobCache@@QEAAXAEBVNetworkIdentifier@@@Z
-    MCAPI void enableCacheFor(class NetworkIdentifier const&);
+    MCAPI void enableCacheFor(class NetworkIdentifier const& client);
 
     // symbol: ?isCacheEnabledFor@ActiveTransfersManager@Server@ClientBlobCache@@QEBA_NAEBVNetworkIdentifier@@@Z
-    MCAPI bool isCacheEnabledFor(class NetworkIdentifier const&) const;
+    MCAPI bool isCacheEnabledFor(class NetworkIdentifier const& client) const;
 
     // symbol: ?onPeerDisconnected@ActiveTransfersManager@Server@ClientBlobCache@@QEAAXAEBVNetworkIdentifier@@@Z
-    MCAPI void onPeerDisconnected(class NetworkIdentifier const&);
+    MCAPI void onPeerDisconnected(class NetworkIdentifier const& client);
 
     // symbol:
     // ?startTransfer@ActiveTransfersManager@Server@ClientBlobCache@@QEBA?AVTransferBuilder@23@AEBVNetworkIdentifier@@@Z
-    MCAPI class ClientBlobCache::Server::TransferBuilder startTransfer(class NetworkIdentifier const&) const;
+    MCAPI class ClientBlobCache::Server::TransferBuilder startTransfer(class NetworkIdentifier const& client) const;
 
     // symbol: ?updateNetworkConditions@ActiveTransfersManager@Server@ClientBlobCache@@QEAAXAEAVServerNetworkSystem@@@Z
     MCAPI void updateNetworkConditions(class ServerNetworkSystem&);
@@ -84,7 +85,7 @@ public:
     // NOLINTBEGIN
     // symbol:
     // ?rememberBlob@ActiveTransfersManager@Server@ClientBlobCache@@AEAA?AV?$shared_ptr@VBlob@Server@ClientBlobCache@@@std@@_KAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@5@_N@Z
-    MCAPI std::shared_ptr<class ClientBlobCache::Server::Blob> rememberBlob(uint64, std::string&, bool);
+    MCAPI std::shared_ptr<class ClientBlobCache::Server::Blob> rememberBlob(uint64 id, std::string& data, bool);
 
     // NOLINTEND
 };

@@ -10,6 +10,7 @@
 
 // auto generated forward declare list
 // clang-format off
+namespace ScriptModuleMinecraft { class ScriptComponentTypeEnumBuilder; }
 namespace ScriptModuleMinecraft { class ScriptItemComponent; }
 namespace ScriptModuleMinecraft { class ScriptItemEnchantments; }
 // clang-format on
@@ -45,12 +46,13 @@ public:
 
     // symbol:
     // ?setEnchantments@ScriptItemEnchantmentComponent@ScriptModuleMinecraft@@QEAA?AV?$Result@X$$V@Scripting@@AEBVScriptItemEnchantments@2@@Z
-    MCAPI class Scripting::Result<void> setEnchantments(class ScriptModuleMinecraft::ScriptItemEnchantments const&);
+    MCAPI class Scripting::Result<void>
+    setEnchantments(class ScriptModuleMinecraft::ScriptItemEnchantments const& enchantments);
 
     // symbol:
-    // ?bind@ScriptItemEnchantmentComponent@ScriptModuleMinecraft@@SA?AV?$ClassBindingBuilder@VScriptItemEnchantmentComponent@ScriptModuleMinecraft@@@Scripting@@XZ
+    // ?bind@ScriptItemEnchantmentComponent@ScriptModuleMinecraft@@SA?AV?$ClassBindingBuilder@VScriptItemEnchantmentComponent@ScriptModuleMinecraft@@@Scripting@@AEAVScriptComponentTypeEnumBuilder@2@@Z
     MCAPI static class Scripting::ClassBindingBuilder<class ScriptModuleMinecraft::ScriptItemEnchantmentComponent>
-    bind();
+    bind(class ScriptModuleMinecraft::ScriptComponentTypeEnumBuilder&);
 
     // NOLINTEND
 };

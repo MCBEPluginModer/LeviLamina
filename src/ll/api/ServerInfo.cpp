@@ -1,5 +1,5 @@
 #include "ll/api/ServerInfo.h"
-#include "ll/api/service/GlobalService.h"
+#include "ll/api/service/Bedrock.h"
 #include "ll/core/Version.h"
 #include "mc/common/BuildInfo.h"
 #include "mc/common/Common.h"
@@ -8,18 +8,17 @@
 #include "mc/world/Minecraft.h"
 
 namespace ll {
-std::atomic<ServerStatus>& getServerStatus() {
-    static std::atomic<ServerStatus> status;
-    return status;
-}
+static std::atomic<ServerStatus> status;
+void                             setServerStatus(ServerStatus value) { status = value; }
+ServerStatus                     getServerStatus() { return status.load(); }
 
 Version getBdsVersion() {
     static auto ver = [] {
         auto info    = Common::getBuildInfo();
         auto v       = Version{info.mBuildId};
         v.preRelease = PreRelease{};
-        v.preRelease.value().values.emplace_back((uint16_t)SharedConstants::RevisionVersion);
-        v.preRelease.value().values.emplace_back((uint16_t)SharedConstants::NetworkProtocolVersion);
+        v.preRelease->values.emplace_back((uint16_t)SharedConstants::RevisionVersion);
+        v.preRelease->values.emplace_back((uint16_t)SharedConstants::NetworkProtocolVersion);
         v.build = info.mCommitId.substr(0, 9);
         return v;
     }();
@@ -44,9 +43,9 @@ Version getLoaderVersion() {
 
 int getServerProtocolVersion() { return SharedConstants::NetworkProtocolVersion; }
 
-bool setServerMotd(std::string const& motd) {
-    if (!Global<ServerNetworkHandler>) return false;
-    Global<ServerNetworkHandler>->allowIncomingConnections(motd, true);
+bool setServerMotd(std::string const& serverName, bool shouldAnnounce) {
+    if (!service::getServerNetworkHandler()) return false;
+    service::getServerNetworkHandler()->allowIncomingConnections(serverName, shouldAnnounce);
     return true;
 }
 } // namespace ll

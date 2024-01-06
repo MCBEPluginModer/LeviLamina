@@ -103,13 +103,12 @@ struct PreRelease {
         while (first != last && !detail::is_plus(*first)) {
             first++;
         }
-        std::string                   s{begin, first};
-        std::vector<std::string_view> tokens;
-        tokens = ll::utils::string_utils::splitByPattern(s, ".");
+        std::string s{begin, first};
+        auto        tokens = ll::string_utils::splitByPattern(s, ".");
         for (auto const& token : tokens) {
             std::optional<std::uint16_t> value;
             if (detail::from_chars(token.data(), token.data() + token.length(), value); value) {
-                values.emplace_back(value.value());
+                values.emplace_back(*value);
             } else {
                 values.emplace_back(std::string{token});
             }
@@ -263,12 +262,12 @@ struct Version {
         if (patch != other.patch) {
             return patch <=> other.patch;
         }
-        if (preRelease.has_value()) {
-            if (other.preRelease.has_value()) {
-                return preRelease.value() <=> other.preRelease.value();
+        if (preRelease) {
+            if (other.preRelease) {
+                return *preRelease <=> *other.preRelease;
             }
             return std::strong_ordering::less;
-        } else if (other.preRelease.has_value()) {
+        } else if (other.preRelease) {
             return std::strong_ordering::greater;
         }
         return std::strong_ordering::equal;
@@ -290,7 +289,7 @@ inline J serialize(Version const& ver) {
 template <class J>
 inline void deserialize(Version& ver, J const& j) {
     if (j.is_string()) {
-        ver.from_string(j.template get<std::string>());
+        ver.from_string(j);
     }
 }
 

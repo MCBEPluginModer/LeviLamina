@@ -23,13 +23,13 @@ public:
     virtual ~StructureBlockActor() = default;
 
     // vIndex: 1, symbol: ?load@StructureBlockActor@@UEAAXAEAVLevel@@AEBVCompoundTag@@AEAVDataLoadHelper@@@Z
-    virtual void load(class Level&, class CompoundTag const&, class DataLoadHelper&);
+    virtual void load(class Level& level, class CompoundTag const& base, class DataLoadHelper& dataLoadHelper);
 
     // vIndex: 2, symbol: ?save@StructureBlockActor@@UEBA_NAEAVCompoundTag@@@Z
-    virtual bool save(class CompoundTag&) const;
+    virtual bool save(class CompoundTag& tag) const;
 
     // vIndex: 8, symbol: ?onChanged@StructureBlockActor@@UEAAXAEAVBlockSource@@@Z
-    virtual void onChanged(class BlockSource&);
+    virtual void onChanged(class BlockSource& region);
 
     // vIndex: 12, symbol: __unk_vfn_12
     virtual void __unk_vfn_12();
@@ -63,13 +63,13 @@ public:
 
     // vIndex: 40, symbol:
     // ?_getUpdatePacket@StructureBlockActor@@MEAA?AV?$unique_ptr@VBlockActorDataPacket@@U?$default_delete@VBlockActorDataPacket@@@std@@@std@@AEAVBlockSource@@@Z
-    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource&);
+    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource& region);
 
     // vIndex: 41, symbol: ?_onUpdatePacket@StructureBlockActor@@MEAAXAEBVCompoundTag@@AEAVBlockSource@@@Z
-    virtual void _onUpdatePacket(class CompoundTag const&, class BlockSource&);
+    virtual void _onUpdatePacket(class CompoundTag const& data, class BlockSource& region);
 
     // symbol: ??0StructureBlockActor@@QEAA@AEBVBlockPos@@@Z
-    MCAPI explicit StructureBlockActor(class BlockPos const&);
+    MCAPI explicit StructureBlockActor(class BlockPos const& pos);
 
     // symbol: ?getStructureData@StructureBlockActor@@QEBAAEBVStructureEditorData@@XZ
     MCAPI class StructureEditorData const& getStructureData() const;
@@ -78,10 +78,11 @@ public:
     MCAPI void setIsWaterlogged(bool);
 
     // symbol: ?setPowered@StructureBlockActor@@QEAAXAEAVBlockSource@@AEBVBlockPos@@_N2@Z
-    MCAPI void setPowered(class BlockSource&, class BlockPos const&, bool, bool);
+    MCAPI void
+    setPowered(class BlockSource& region, class BlockPos const& pos, bool shouldTrigger, bool redstoneTriggered);
 
     // symbol: ?setStructureData@StructureBlockActor@@QEAAXAEBVStructureEditorData@@@Z
-    MCAPI void setStructureData(class StructureEditorData const&);
+    MCAPI void setStructureData(class StructureEditorData const& data);
 
     // symbol: ?MAX_WIREFRAME_RENDER_DISTANCE@StructureBlockActor@@2MB
     MCAPI static float const MAX_WIREFRAME_RENDER_DISTANCE;
@@ -100,13 +101,19 @@ public:
     // private:
     // NOLINTBEGIN
     // symbol: ?_loadStructure@StructureBlockActor@@AEAA_NAEAVBlockSource@@AEBVBlockPos@@AEBVBaseGameVersion@@@Z
-    MCAPI bool _loadStructure(class BlockSource&, class BlockPos const&, class BaseGameVersion const&);
+    MCAPI bool
+    _loadStructure(class BlockSource& region, class BlockPos const& position, class BaseGameVersion const& version);
 
     // symbol: ?_saveStructure@StructureBlockActor@@AEAA_NAEAVBlockSource@@AEBVBlockPos@@_N@Z
-    MCAPI bool _saveStructure(class BlockSource&, class BlockPos const&, bool);
+    MCAPI bool _saveStructure(class BlockSource& region, class BlockPos const& position, bool redstoneTriggered);
 
     // symbol: ?_trigger@StructureBlockActor@@AEAAXAEAVBlockSource@@AEBVBlockPos@@AEBVBaseGameVersion@@_N@Z
-    MCAPI void _trigger(class BlockSource&, class BlockPos const&, class BaseGameVersion const&, bool);
+    MCAPI void _trigger(
+        class BlockSource&           region,
+        class BlockPos const&        pos,
+        class BaseGameVersion const& version,
+        bool                         redstoneTriggered
+    );
 
     // NOLINTEND
 };

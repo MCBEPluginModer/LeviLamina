@@ -50,29 +50,39 @@ public:
 
     // vIndex: 2, symbol:
     // ?uploadFileToRealmStorage@ResourcePackFileUploadManager@@UEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVPath@Core@@H0@Z
-    virtual void uploadFileToRealmStorage(std::string const&, class Core::Path const&, int, std::string const&) = 0;
+    virtual void uploadFileToRealmStorage(
+        std::string const&      uploadId,
+        class Core::Path const& path,
+        int,
+        std::string const& realmsGuid
+    ) = 0;
 
     // symbol: ??0FileUploadManager@@QEAA@AEAVTaskGroup@@V?$shared_ptr@VIFileChunkUploader@@@std@@@Z
-    MCAPI FileUploadManager(class TaskGroup&, std::shared_ptr<class IFileChunkUploader>);
+    MCAPI FileUploadManager(class TaskGroup& taskGroup, std::shared_ptr<class IFileChunkUploader> fileUploader);
 
     // symbol: ?addCallbackQueue@FileUploadManager@@QEAAXV?$function@$$A6AXXZ@std@@@Z
-    MCAPI void addCallbackQueue(std::function<void(void)>);
+    MCAPI void addCallbackQueue(std::function<void(void)> callback);
 
     // symbol: ?setFailed@FileUploadManager@@QEAAXW4UploadError@@@Z
-    MCAPI void setFailed(::UploadError);
+    MCAPI void setFailed(::UploadError reason);
 
     // symbol: ?setUseStream@FileUploadManager@@QEAAX_N@Z
-    MCAPI void setUseStream(bool);
+    MCAPI void setUseStream(bool stream);
 
     // symbol: ?update@FileUploadManager@@QEAAXXZ
     MCAPI void update();
 
     // symbol: ?uploadChunk@FileUploadManager@@QEAAXH@Z
-    MCAPI void uploadChunk(int);
+    MCAPI void uploadChunk(int chunkID);
 
     // symbol:
     // ?uploadFile@FileUploadManager@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVPath@Core@@_NAEBVValue@Json@@@Z
-    MCAPI void uploadFile(std::string const&, class Core::Path const&, bool, class Json::Value const&);
+    MCAPI void uploadFile(
+        std::string const&       uploadId,
+        class Core::Path const&  filePath,
+        bool                     autoStartUpload,
+        class Json::Value const& uploadOptions
+    );
 
     // NOLINTEND
 
@@ -85,7 +95,7 @@ public:
     MCAPI void _resumeUpload();
 
     // symbol: ?_uploadChunk@FileUploadManager@@IEAAXAEBUFileChunkInfo@@@Z
-    MCAPI void _uploadChunk(struct FileChunkInfo const&);
+    MCAPI void _uploadChunk(struct FileChunkInfo const& chunk);
 
     // symbol: ?_uploadStream@FileUploadManager@@IEAAXXZ
     MCAPI void _uploadStream();

@@ -3,9 +3,20 @@
 #include <string_view>
 #include <utility>
 
+#include "ll/api/base/Concepts.h"
 #include "ll/api/base/StdInt.h"
 
 namespace ll::meta {
+
+template <class... Ts>
+struct Overloaded : Ts... {
+    using Ts::operator()...;
+};
+
+template <unsigned N>
+struct PriorityTag : PriorityTag<N - 1> {};
+template <>
+struct PriorityTag<0> {};
 
 template <class... Components, class F>
 constexpr void unrollWithArgs(F&& func) {
@@ -84,9 +95,22 @@ public:
     static void constexpr forEachIndexed(Func&& func) {
         unrollWithArgs<TL...>(func);
     }
+
+    template <class T>
+    static constexpr size_t index = [] {
+        size_t res = ~0ui64;
+        forEachIndexed([&]<class Ts>(size_t i) {
+            if constexpr (std::is_same_v<T, Ts>) {
+                if (res == ~0ui64) {
+                    res = i;
+                }
+            }
+        });
+        return res;
+    }();
 };
 
-template <auto Id>
+template <class Group, auto Id>
 struct TypeCounter {
     using tag = TypeCounter;
 
@@ -103,13 +127,86 @@ struct TypeCounter {
     static consteval auto exists(...) { return GenerateTag(), false; }
 };
 
-template <class T, auto Id = int64{}>
-consteval auto uniqueId() {
-    if constexpr (TypeCounter<Id>::exists(Id)) {
-        return uniqueId<T, Id + 1>();
+template <class Group, class T, auto Id = int64{}>
+[[maybe_unused]] consteval auto uniqueId() {
+    if constexpr (TypeCounter<Group, Id>::exists(Id)) {
+        return uniqueId<Group, T, Id + 1>();
     } else {
         return Id;
     }
 }
+
+namespace DynamicTypeList {
+
+template <class Group, size_t N>
+struct Getter {
+    friend auto valueStored(Getter<Group, N>);
+};
+template <class Group, size_t N, class Type>
+struct Setter {
+    friend auto valueStored(Getter<Group, N>) { return Type{}; }
+};
+#ifdef __INTELLISENSE__
+template <class Group, auto Id = size_t{}>
+[[maybe_unused]] consteval auto value() {
+    return TypeList<>{};
+}
+template <class Group, concepts::Specializes<TypeList> T>
+[[maybe_unused]] consteval void assign() {}
+template <class Group, class T>
+[[maybe_unused]] consteval void push_back() {}
+template <class Group, class T>
+[[maybe_unused]] consteval void push_front() {}
+template <class Group, template <class> class W>
+[[maybe_unused]] consteval void wrap() {}
+template <class Group, template <class> class M>
+[[maybe_unused]] consteval void map() {}
+#else
+template <class Group, auto Id = size_t{}, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval auto value() {
+    if constexpr (requires(Getter<Group, Id + 1> g) { valueStored(g); }) {
+        return value<Group, Id + 1, UniqueTag>();
+    } else if constexpr (requires(Getter<Group, Id> g) { valueStored(g); }) {
+        return valueStored(Getter<Group, Id>{});
+    } else {
+        return TypeList<>{};
+    }
+}
+template <class Group, concepts::Specializes<TypeList> T, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval void assign() {
+    constexpr auto       id = uniqueId<Group, UniqueTag>();
+    Setter<Group, id, T> setter{};
+}
+template <class Group, class T, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval void push_back() {
+    using now         = decltype(value<Group, 0, UniqueTag>());
+    constexpr auto id = uniqueId<Group, UniqueTag>();
+    using next        = typename now::template push_back<T>;
+    Setter<Group, id, next> setter{};
+}
+template <class Group, class T, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval void push_front() {
+    using now         = decltype(value<Group, 0, UniqueTag>());
+    constexpr auto id = uniqueId<Group, UniqueTag>();
+    using next        = typename now::template push_front<T>;
+    Setter<Group, id, next> setter{};
+}
+template <class Group, template <class> class W, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval void wrap() {
+    using now         = decltype(value<Group, 0, UniqueTag>());
+    constexpr auto id = uniqueId<Group, UniqueTag>();
+    using next        = typename now::template wrap<W>;
+    Setter<Group, id, next> setter{};
+}
+template <class Group, template <class> class M, class UniqueTag = decltype([] {})>
+[[maybe_unused]] consteval void map() {
+    using now         = decltype(value<Group, 0, UniqueTag>());
+    constexpr auto id = uniqueId<Group, UniqueTag>();
+    using next        = typename now::template map<M>;
+    Setter<Group, id, next> setter{};
+}
+#endif
+
+} // namespace DynamicTypeList
 
 } // namespace ll::meta

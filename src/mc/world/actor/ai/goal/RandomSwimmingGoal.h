@@ -26,13 +26,13 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@RandomSwimmingGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 10, symbol: ?_setWantedPosition@RandomSwimmingGoal@@MEAA_NXZ
     virtual bool _setWantedPosition();
 
     // symbol: ??0RandomSwimmingGoal@@QEAA@AEAVMob@@MHHH_N@Z
-    MCAPI RandomSwimmingGoal(class Mob&, float, int, int, int, bool);
+    MCAPI RandomSwimmingGoal(class Mob& mob, float speed, int xzDist, int yDist, int interval, bool);
 
     // NOLINTEND
 };

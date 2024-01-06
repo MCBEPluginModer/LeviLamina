@@ -24,8 +24,8 @@ public:
     // vIndex: 1, symbol: ?isEntitySource@ActorDamageSource@@UEBA_NXZ
     virtual bool isEntitySource() const;
 
-    // vIndex: 2, symbol: ?isChildEntitySource@ActorDamageSource@@UEBA_NXZ
-    virtual bool isChildEntitySource() const;
+    // vIndex: 2, symbol: __unk_vfn_2
+    virtual void __unk_vfn_2();
 
     // vIndex: 3, symbol: ?isBlockSource@ActorDamageSource@@UEBA_NXZ
     virtual bool isBlockSource() const;
@@ -50,7 +50,8 @@ public:
 
     // vIndex: 10, symbol:
     // ?getDeathMessage@ActorDamageSource@@UEBA?AU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@@std@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@PEAVActor@@@Z
-    virtual std::pair<std::string, std::vector<std::string>> getDeathMessage(std::string, class Actor*) const;
+    virtual std::pair<std::string, std::vector<std::string>>
+    getDeathMessage(std::string deadName, class Actor* dead) const;
 
     // vIndex: 11, symbol: ?getIsCreative@ActorDamageSource@@UEBA_NXZ
     virtual bool getIsCreative() const;
@@ -86,14 +87,17 @@ public:
     // ?clone@ActorDamageSource@@UEBA?AV?$unique_ptr@VActorDamageSource@@U?$default_delete@VActorDamageSource@@@std@@@std@@XZ
     virtual std::unique_ptr<class ActorDamageSource> clone() const;
 
+    // symbol: ?isChildEntitySource@ActorDamageSource@@UEBA_NXZ
+    MCVAPI bool isChildEntitySource() const;
+
     // symbol: ??0ActorDamageSource@@QEAA@W4ActorDamageCause@@@Z
-    MCAPI explicit ActorDamageSource(::ActorDamageCause);
+    MCAPI explicit ActorDamageSource(::ActorDamageCause cause);
 
     // symbol: ?getCause@ActorDamageSource@@QEBA?AW4ActorDamageCause@@XZ
     MCAPI ::ActorDamageCause getCause() const;
 
     // symbol: ?setCause@ActorDamageSource@@QEAAXW4ActorDamageCause@@@Z
-    MCAPI void setCause(::ActorDamageCause);
+    MCAPI void setCause(::ActorDamageCause cause);
 
     // symbol:
     // ?generateDamageCauseCommandEnum@ActorDamageSource@@SA?AV?$vector@U?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ActorDamageCause@@@std@@V?$allocator@U?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ActorDamageCause@@@std@@@2@@std@@V?$optional@UVersion@Scripting@@@3@@Z
@@ -105,11 +109,11 @@ public:
     MCAPI static std::vector<class VersionedActorDamageCause> generateVersionedDamageCauseCommandEnum();
 
     // symbol: ?isDamageCausedByMob@ActorDamageSource@@SA_NW4ActorDamageCause@@@Z
-    MCAPI static bool isDamageCausedByMob(::ActorDamageCause);
+    MCAPI static bool isDamageCausedByMob(::ActorDamageCause cause);
 
     // symbol:
     // ?lookupCause@ActorDamageSource@@SA?AW4ActorDamageCause@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    MCAPI static ::ActorDamageCause lookupCause(std::string const&);
+    MCAPI static ::ActorDamageCause lookupCause(std::string const& name);
 
     // symbol:
     // ?lookupCauseName@ActorDamageSource@@SAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ActorDamageCause@@@Z

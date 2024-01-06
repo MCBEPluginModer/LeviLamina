@@ -18,7 +18,7 @@ public:
 public:
     // NOLINTBEGIN
     // vIndex: 0, symbol: ?containerContentChanged@PlayerUIContainerModelBase@@UEAAXH@Z
-    virtual void containerContentChanged(int);
+    virtual void containerContentChanged(int slot);
 
     // vIndex: 1, symbol: __gen_??1PlayerUIContainerModelBase@@UEAA@XZ
     virtual ~PlayerUIContainerModelBase() = default;
@@ -50,24 +50,29 @@ public:
     // vIndex: 19, symbol: __unk_vfn_19
     virtual void __unk_vfn_19();
 
-    // vIndex: 20, symbol: ?_getContainer@PlayerUIContainerModelBase@@MEBAPEAVContainer@@XZ
+    // vIndex: 21, symbol: ?_getContainer@PlayerUIContainerModelBase@@MEBAPEAVContainer@@XZ
     virtual class Container* _getContainer() const;
 
-    // vIndex: 21, symbol: ?_getContainerOffset@PlayerUIContainerModelBase@@MEBAHXZ
+    // vIndex: 22, symbol: ?_getContainerOffset@PlayerUIContainerModelBase@@MEBAHXZ
     virtual int _getContainerOffset() const;
 
-    // vIndex: 22, symbol: ?_onItemChanged@PlayerUIContainerModelBase@@MEAAXHAEBVItemStack@@0@Z
-    virtual void _onItemChanged(int, class ItemStack const&, class ItemStack const&);
+    // vIndex: 24, symbol: ?_onItemChanged@PlayerUIContainerModelBase@@MEAAXHAEBVItemStack@@0@Z
+    virtual void _onItemChanged(int, class ItemStack const& oldItem, class ItemStack const& newItem);
 
     // symbol: ??0PlayerUIContainerModelBase@@QEAA@W4ContainerEnumName@@AEAVPlayer@@HW4ContainerCategory@@@Z
-    MCAPI PlayerUIContainerModelBase(::ContainerEnumName, class Player&, int, ::ContainerCategory);
+    MCAPI PlayerUIContainerModelBase(
+        ::ContainerEnumName containerName,
+        class Player&       player,
+        int                 containerSize,
+        ::ContainerCategory category
+    );
 
     // NOLINTEND
 
     // protected:
     // NOLINTBEGIN
     // symbol: ?_refreshContainer@PlayerUIContainerModelBase@@IEAAX_N@Z
-    MCAPI void _refreshContainer(bool);
+    MCAPI void _refreshContainer(bool initial);
 
     // NOLINTEND
 };

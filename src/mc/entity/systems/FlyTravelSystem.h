@@ -20,15 +20,14 @@ public:
     MCAPI static struct TickingSystemWithInfo createFlyTravelSystem();
 
     // symbol:
-    // ?tickFlyTravelSystem@FlyTravelSystem@@SAXV?$ViewT@VStrictEntityContext@@VEntityRegistryBase@@U?$Include@V?$FlagComponent@UPlayerComponentFlag@@@@UMobTravelComponent@@@@$$CBUAbilitiesComponent@@$$CBUSynchedActorDataComponent@@UFlySpeedComponent@@@@@Z
+    // ?tickFlyTravelSystem@FlyTravelSystem@@SAXV?$ViewT@VStrictEntityContext@@U?$Include@V?$FlagComponent@UPlayerComponentFlag@@@@UMobTravelComponent@@@@$$CBUAbilitiesComponent@@$$CBUSynchedActorDataComponent@@UFlySpeedComponent@@@@@Z
     MCAPI static void
-        tickFlyTravelSystem(class ViewT<
-                            class StrictEntityContext,
-                            class EntityRegistryBase,
-                            struct Include<class FlagComponent<struct PlayerComponentFlag>, struct MobTravelComponent>,
-                            struct AbilitiesComponent const,
-                            struct SynchedActorDataComponent const,
-                            struct FlySpeedComponent>);
+    tickFlyTravelSystem(class ViewT<
+                        class StrictEntityContext,
+                        struct Include<class FlagComponent<struct PlayerComponentFlag>, struct MobTravelComponent>,
+                        struct AbilitiesComponent const,
+                        struct SynchedActorDataComponent const,
+                        struct FlySpeedComponent> view);
 
     // NOLINTEND
 };

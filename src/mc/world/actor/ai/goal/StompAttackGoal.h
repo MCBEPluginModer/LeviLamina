@@ -35,14 +35,14 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@StompAttackGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // NOLINTEND
 
     // protected:
     // NOLINTBEGIN
     // symbol: ?_attemptAttack@StompAttackGoal@@IEAAXAEAVActor@@@Z
-    MCAPI void _attemptAttack(class Actor&);
+    MCAPI void _attemptAttack(class Actor& target);
 
     // NOLINTEND
 };

@@ -27,16 +27,16 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@SetTimePacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol: ?_read@SetTimePacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0SetTimePacket@@QEAA@XZ
     MCAPI SetTimePacket();
 
     // symbol: ??0SetTimePacket@@QEAA@H@Z
-    MCAPI explicit SetTimePacket(int);
+    MCAPI explicit SetTimePacket(int time);
 
     // NOLINTEND
 };

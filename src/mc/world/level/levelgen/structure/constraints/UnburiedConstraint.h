@@ -18,10 +18,14 @@ public:
     virtual ~UnburiedConstraint() = default;
 
     // vIndex: 1, symbol: ?isSatisfied@UnburiedConstraint@@UEBA_NAEBVIBlockWorldGenAPI@@AEBVBlockPos@@AEBW4Rotation@@@Z
-    virtual bool isSatisfied(class IBlockWorldGenAPI const&, class BlockPos const&, ::Rotation const&) const;
+    virtual bool isSatisfied(
+        class IBlockWorldGenAPI const& target,
+        class BlockPos const&          structurePos,
+        ::Rotation const&              structureRot
+    ) const;
 
     // symbol: ??0UnburiedConstraint@@QEAA@AEAVStructureTemplate@@@Z
-    MCAPI explicit UnburiedConstraint(class StructureTemplate&);
+    MCAPI explicit UnburiedConstraint(class StructureTemplate& structure);
 
     // NOLINTEND
 };

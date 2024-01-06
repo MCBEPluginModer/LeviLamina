@@ -18,28 +18,28 @@ public:
     virtual ~MovingBlockActor() = default;
 
     // vIndex: 1, symbol: ?load@MovingBlockActor@@UEAAXAEAVLevel@@AEBVCompoundTag@@AEAVDataLoadHelper@@@Z
-    virtual void load(class Level&, class CompoundTag const&, class DataLoadHelper&);
+    virtual void load(class Level& level, class CompoundTag const& tag, class DataLoadHelper& dataLoadHelper);
 
     // vIndex: 2, symbol: ?save@MovingBlockActor@@UEBA_NAEAVCompoundTag@@@Z
-    virtual bool save(class CompoundTag&) const;
+    virtual bool save(class CompoundTag& tag) const;
 
     // vIndex: 7, symbol: ?tick@MovingBlockActor@@UEAAXAEAVBlockSource@@@Z
-    virtual void tick(class BlockSource&);
+    virtual void tick(class BlockSource& region);
 
     // vIndex: 12, symbol: __unk_vfn_12
     virtual void __unk_vfn_12();
 
     // vIndex: 14, symbol: ?isPreserved@MovingBlockActor@@UEBA_NAEAVBlockSource@@@Z
-    virtual bool isPreserved(class BlockSource&) const;
+    virtual bool isPreserved(class BlockSource& region) const;
 
     // vIndex: 15, symbol: ?shouldPreserve@MovingBlockActor@@UEAA_NAEAVBlockSource@@@Z
-    virtual bool shouldPreserve(class BlockSource&);
+    virtual bool shouldPreserve(class BlockSource& region);
 
     // vIndex: 18, symbol: __unk_vfn_18
     virtual void __unk_vfn_18();
 
     // vIndex: 22, symbol: ?getCollisionShape@MovingBlockActor@@UEBA?AVAABB@@AEBVIConstBlockSource@@@Z
-    virtual class AABB getCollisionShape(class IConstBlockSource const&) const;
+    virtual class AABB getCollisionShape(class IConstBlockSource const& region) const;
 
     // vIndex: 30, symbol: __unk_vfn_30
     virtual void __unk_vfn_30();
@@ -67,28 +67,32 @@ public:
 
     // vIndex: 40, symbol:
     // ?_getUpdatePacket@MovingBlockActor@@MEAA?AV?$unique_ptr@VBlockActorDataPacket@@U?$default_delete@VBlockActorDataPacket@@@std@@@std@@AEAVBlockSource@@@Z
-    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource&);
+    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource& region);
 
     // vIndex: 41, symbol: ?_onUpdatePacket@MovingBlockActor@@MEAAXAEBVCompoundTag@@AEAVBlockSource@@@Z
-    virtual void _onUpdatePacket(class CompoundTag const&, class BlockSource&);
+    virtual void _onUpdatePacket(class CompoundTag const& data, class BlockSource& region);
 
     // symbol: ?getOwningPiston@MovingBlockActor@@UEAAPEAVPistonBlockActor@@AEAVBlockSource@@@Z
-    MCVAPI class PistonBlockActor* getOwningPiston(class BlockSource&);
+    MCVAPI class PistonBlockActor* getOwningPiston(class BlockSource& region);
 
     // symbol: ?getOwningPiston@MovingBlockActor@@UEBAPEBVPistonBlockActor@@AEAVBlockSource@@@Z
-    MCVAPI class PistonBlockActor const* getOwningPiston(class BlockSource&) const;
+    MCVAPI class PistonBlockActor const* getOwningPiston(class BlockSource& region) const;
 
     // symbol: ??0MovingBlockActor@@QEAA@AEBVBlockPos@@@Z
-    MCAPI explicit MovingBlockActor(class BlockPos const&);
-
-    // symbol: ?_validPistonPos@MovingBlockActor@@QEBA_NAEBVIConstBlockSource@@@Z
-    MCAPI bool _validPistonPos(class IConstBlockSource const&) const;
+    MCAPI explicit MovingBlockActor(class BlockPos const& pos);
 
     // symbol: ?getDrawPos@MovingBlockActor@@QEBA?AVVec3@@AEBVIConstBlockSource@@M@Z
-    MCAPI class Vec3 getDrawPos(class IConstBlockSource const&, float) const;
+    MCAPI class Vec3 getDrawPos(class IConstBlockSource const& region, float a) const;
 
     // symbol: ?moveCollidedEntities@MovingBlockActor@@QEAAXAEAVPistonBlockActor@@AEAVBlockSource@@@Z
-    MCAPI void moveCollidedEntities(class PistonBlockActor&, class BlockSource&);
+    MCAPI void moveCollidedEntities(class PistonBlockActor& pistonBlock, class BlockSource& region);
+
+    // NOLINTEND
+
+    // private:
+    // NOLINTBEGIN
+    // symbol: ?_validPistonPos@MovingBlockActor@@AEBA_NAEBVIConstBlockSource@@@Z
+    MCAPI bool _validPistonPos(class IConstBlockSource const& region) const;
 
     // NOLINTEND
 };

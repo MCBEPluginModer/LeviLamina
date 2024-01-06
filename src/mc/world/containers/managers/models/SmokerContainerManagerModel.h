@@ -20,7 +20,7 @@ public:
     virtual ~SmokerContainerManagerModel() = default;
 
     // symbol: ??0SmokerContainerManagerModel@@QEAA@W4ContainerID@@AEAVPlayer@@AEBVBlockPos@@@Z
-    MCAPI SmokerContainerManagerModel(::ContainerID, class Player&, class BlockPos const&);
+    MCAPI SmokerContainerManagerModel(::ContainerID containerId, class Player& player, class BlockPos const& blockPos);
 
     // NOLINTEND
 };

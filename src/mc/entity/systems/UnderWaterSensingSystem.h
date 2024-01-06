@@ -12,7 +12,7 @@
 #include "mc/deps/core/data/Read.h"
 #include "mc/deps/core/data/Write.h"
 #include "mc/entity/EntityFactoryT.h"
-#include "mc/entity/EntityModifierT.h"
+#include "mc/entity/EntityModifier.h"
 #include "mc/world/components/FlagComponent.h"
 
 struct UnderWaterSensingSystem {
@@ -69,7 +69,7 @@ public:
                           class FlagComponent<struct ActorHeadWasInWaterFlag>>,
                       struct GlobalRead<struct LocalConstBlockSourceFactoryComponent>,
                       struct GlobalWrite<>,
-                      struct EntityFactoryT<>>&);
+                      struct EntityFactoryT<>>& context);
 
     // vIndex: 6, symbol:
     // ?singleTick@UnderWaterSensingSystem@@EEAAXAEAV?$StrictExecutionContext@U?$Filter@V?$FlagComponent@UHorseFlag@@@@V?$FlagComponent@UMobFlag@@@@V?$FlagComponent@UParrotFlag@@@@UVehicleComponent@@V?$FlagComponent@UCamelFlag@@@@V?$FlagComponent@UPlayerComponentFlag@@@@@@U?$Read@UDimensionTypeComponent@@UUpdateWaterStateRequestComponent@@UMobBodyRotationComponent@@UPassengerComponent@@URenderRotationComponent@@UStandAnimationComponent@@UStateVectorComponent@@USynchedActorDataComponent@@UAABBShapeComponent@@UActorRotationComponent@@UOffsetsComponent@@UVanillaOffsetComponent@@UPassengerRenderingRidingOffsetComponent@@@@U?$Write@$$V@@U?$AddRemove@V?$FlagComponent@UActorHeadInWaterFlag@@@@V?$FlagComponent@UActorHeadWasInWaterFlag@@@@@@U?$GlobalRead@ULocalConstBlockSourceFactoryComponent@@@@U?$GlobalWrite@$$V@@U?$EntityFactoryT@$$V@@@@AEAVStrictEntityContext@@@Z
@@ -83,9 +83,8 @@ public:
     // private:
     // NOLINTBEGIN
     // symbol:
-    // ?doUnderWaterSensing@UnderWaterSensingSystem@@CAXAEBVStrictEntityContext@@AEBUStateVectorComponent@@AEBUUpdateWaterStateRequestComponent@@V?$Optional@$$CBV?$FlagComponent@UActorHeadInWaterFlag@@@@@@V?$EntityModifierT@VEntityRegistryBase@@VStrictEntityContext@@V?$FlagComponent@UActorHeadInWaterFlag@@@@V?$FlagComponent@UActorHeadWasInWaterFlag@@@@@@AEBUGetAttachPositionViews@@AEBVIConstBlockSource@@@Z
-    MCAPI static void
-    doUnderWaterSensing(class StrictEntityContext const&, struct StateVectorComponent const&, struct UpdateWaterStateRequestComponent const&, class Optional<class FlagComponent<struct ActorHeadInWaterFlag> const>, class EntityModifierT<class EntityRegistryBase, class StrictEntityContext, class FlagComponent<struct ActorHeadInWaterFlag>, class FlagComponent<struct ActorHeadWasInWaterFlag>>, struct GetAttachPositionViews const&, class IConstBlockSource const&);
+    // ?doUnderWaterSensing@UnderWaterSensingSystem@@CAXAEBVStrictEntityContext@@AEBUStateVectorComponent@@AEBUUpdateWaterStateRequestComponent@@V?$Optional@$$CBV?$FlagComponent@UActorHeadInWaterFlag@@@@@@V?$EntityModifier@V?$FlagComponent@UActorHeadInWaterFlag@@@@V?$FlagComponent@UActorHeadWasInWaterFlag@@@@@@AEBUGetAttachPositionViews@@AEBVIConstBlockSource@@@Z
+    MCAPI static void doUnderWaterSensing(class StrictEntityContext const&, struct StateVectorComponent const&, struct UpdateWaterStateRequestComponent const&, class Optional<class FlagComponent<struct ActorHeadInWaterFlag> const>, class EntityModifier<class FlagComponent<struct ActorHeadInWaterFlag>, class FlagComponent<struct ActorHeadWasInWaterFlag>>, struct GetAttachPositionViews const&, class IConstBlockSource const&);
 
     // NOLINTEND
 };

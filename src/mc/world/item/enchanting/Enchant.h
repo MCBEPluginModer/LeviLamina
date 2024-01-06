@@ -115,13 +115,13 @@ public:
     virtual ~Enchant();
 
     // vIndex: 1, symbol: ?isCompatibleWith@Enchant@@UEBA_NW4Type@1@@Z
-    virtual bool isCompatibleWith(::Enchant::Type) const;
+    virtual bool isCompatibleWith(::Enchant::Type type) const;
 
     // vIndex: 2, symbol: ?getMinCost@Enchant@@UEBAHH@Z
-    virtual int getMinCost(int) const;
+    virtual int getMinCost(int level) const;
 
     // vIndex: 3, symbol: ?getMaxCost@Enchant@@UEBAHH@Z
-    virtual int getMaxCost(int) const;
+    virtual int getMaxCost(int level) const;
 
     // vIndex: 4, symbol: __unk_vfn_4
     virtual void __unk_vfn_4();
@@ -130,16 +130,16 @@ public:
     virtual int getMaxLevel() const;
 
     // vIndex: 6, symbol: ?getDamageProtection@Enchant@@UEBAHHAEBVActorDamageSource@@@Z
-    virtual int getDamageProtection(int, class ActorDamageSource const&) const;
+    virtual int getDamageProtection(int level, class ActorDamageSource const& source) const;
 
     // vIndex: 7, symbol: ?getDamageBonus@Enchant@@UEBAMHAEBVActor@@@Z
-    virtual float getDamageBonus(int, class Actor const&) const;
+    virtual float getDamageBonus(int level, class Actor const& target) const;
 
     // vIndex: 8, symbol: ?doPostAttack@Enchant@@UEBAXAEAVActor@@0H@Z
-    virtual void doPostAttack(class Actor&, class Actor&, int) const;
+    virtual void doPostAttack(class Actor& attacker, class Actor& victim, int level) const;
 
     // vIndex: 9, symbol: ?doPostHurt@Enchant@@UEBAXAEAVItemInstance@@AEAVActor@@1H@Z
-    virtual void doPostHurt(class ItemInstance&, class Actor&, class Actor&, int) const;
+    virtual void doPostHurt(class ItemInstance& item, class Actor& victim, class Actor& attacker, int level) const;
 
     // vIndex: 10, symbol: __unk_vfn_10
     virtual void __unk_vfn_10();
@@ -154,7 +154,7 @@ public:
     virtual void __unk_vfn_13();
 
     // vIndex: 14, symbol: ?_isValidEnchantmentTypeForCategory@Enchant@@EEBA_NW4Type@1@@Z
-    virtual bool _isValidEnchantmentTypeForCategory(::Enchant::Type) const;
+    virtual bool _isValidEnchantmentTypeForCategory(::Enchant::Type type) const;
 
     // symbol: ?getMinLevel@Enchant@@UEBAHXZ
     MCVAPI int getMinLevel() const;
@@ -172,7 +172,15 @@ public:
     MCVAPI bool isTreasureOnly() const;
 
     // symbol: ??0Enchant@@QEAA@W4Type@0@W4Frequency@0@V?$basic_string_view@DU?$char_traits@D@std@@@std@@2HH_N@Z
-    MCAPI Enchant(::Enchant::Type, ::Enchant::Frequency, std::string_view, std::string_view, int, int, bool);
+    MCAPI Enchant(
+        ::Enchant::Type      type,
+        ::Enchant::Frequency frequency,
+        std::string_view     stringId,
+        std::string_view     description,
+        int                  primarySlots,
+        int                  secondarySlots,
+        bool                 isLootable
+    );
 
     // symbol: ?getDescriptionId@Enchant@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
     MCAPI std::string getDescriptionId() const;
@@ -190,16 +198,16 @@ public:
     MCAPI bool isDisabled() const;
 
     // symbol: ?enchantSlotFromString@Enchant@@SA?AW4Slot@1@V?$basic_string_view@DU?$char_traits@D@std@@@std@@@Z
-    MCAPI static ::Enchant::Slot enchantSlotFromString(std::string_view);
+    MCAPI static ::Enchant::Slot enchantSlotFromString(std::string_view str);
 
     // symbol: ?getEnchant@Enchant@@SAPEBV1@AEBW4Type@1@@Z
-    MCAPI static class Enchant const* getEnchant(::Enchant::Type const&);
+    MCAPI static class Enchant const* getEnchant(::Enchant::Type const& type);
 
     // symbol: ?getEnchantFromName@Enchant@@SAPEBV1@AEBVHashedString@@@Z
-    MCAPI static class Enchant const* getEnchantFromName(class HashedString const&);
+    MCAPI static class Enchant const* getEnchantFromName(class HashedString const& name);
 
     // symbol: ?getEnchantTypeFromName@Enchant@@SA?AW4Type@1@AEBVHashedString@@@Z
-    MCAPI static ::Enchant::Type getEnchantTypeFromName(class HashedString const&);
+    MCAPI static ::Enchant::Type getEnchantTypeFromName(class HashedString const& name);
 
     // symbol: ?initEnchants@Enchant@@SAXXZ
     MCAPI static void initEnchants();

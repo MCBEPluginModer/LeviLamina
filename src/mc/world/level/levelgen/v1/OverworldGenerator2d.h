@@ -36,19 +36,24 @@ public:
     // vIndex: 55, symbol:
     // ?_prepareHeights@OverworldGenerator2d@@EEAAXAEAVBlockVolume@@AEBVChunkPos@@AEBVWorldGenCache@@PEAVAquifer@@$$QEAV?$function@$$A6AXAEBVBlockPos@@AEBVBlock@@H@Z@std@@_NPEAV?$vector@FV?$allocator@F@std@@@7@H@Z
     virtual void _prepareHeights(
-        class BlockVolume&,
-        class ChunkPos const&,
-        class WorldGenCache const&,
-        class Aquifer*,
-        std::function<void(class BlockPos const&, class Block const&, int)>&&,
-        bool,
-        std::vector<short>*,
-        int
+        class BlockVolume&                                                    box,
+        class ChunkPos const&                                                 chunkPos,
+        class WorldGenCache const&                                            worldGenCache,
+        class Aquifer*                                                        aquiferPtr,
+        std::function<void(class BlockPos const&, class Block const&, int)>&& tickUpdateFn,
+        bool                                                                  factorInBeardsAndShavers,
+        std::vector<short>*                                                   ZXheights,
+        int                                                                   skipTopN
     );
 
     // vIndex: 46, symbol:
     // ?decorateWorldGenPostProcess@OverworldGenerator2d@@EEBAXAEAVBiome@@AEAVLevelChunk@@AEAVBlockSource@@AEAVRandom@@@Z
-    virtual void decorateWorldGenPostProcess(class Biome&, class LevelChunk&, class BlockSource&, class Random&) const;
+    virtual void decorateWorldGenPostProcess(
+        class Biome&       biome,
+        class LevelChunk&  lc,
+        class BlockSource& source,
+        class Random&      random
+    ) const;
 
     // vIndex: 42, symbol: ?findSpawnPosition@OverworldGenerator2d@@UEBA?AVBlockPos@@XZ
     virtual class BlockPos findSpawnPosition() const;
@@ -56,7 +61,7 @@ public:
     // vIndex: 47, symbol:
     // ?generateDensityCellsForChunk@OverworldGenerator2d@@UEBA?AV?$MultidimensionalArray@M$04$04$0CJ@@Util@@AEBVChunkPos@@@Z
     virtual class Util::MultidimensionalArray<float, 5, 5, 41>
-    generateDensityCellsForChunk(class ChunkPos const&) const;
+    generateDensityCellsForChunk(class ChunkPos const& chunkPos) const;
 
     // vIndex: 40, symbol: ?getBiomeSource@OverworldGenerator2d@@UEBAAEBVBiomeSource@@XZ
     virtual class BiomeSource const& getBiomeSource() const;
@@ -92,16 +97,17 @@ public:
     // NOLINTBEGIN
     // symbol:
     // ?_generateDensityCellsForChunk@OverworldGenerator2d@@AEBA?AV?$MultidimensionalArray@M$04$04$0CJ@@Util@@AEBVChunkPos@@@Z
-    MCAPI class Util::MultidimensionalArray<float, 5, 5, 41> _generateDensityCellsForChunk(class ChunkPos const&) const;
+    MCAPI class Util::MultidimensionalArray<float, 5, 5, 41>
+    _generateDensityCellsForChunk(class ChunkPos const& chunkPos) const;
 
     // symbol:
     // ?_makeBiomeSource@OverworldGenerator2d@@CA?AV?$unique_ptr@VBiomeSource@@U?$default_delete@VBiomeSource@@@std@@@std@@IAEBVDimension@@@Z
-    MCAPI static std::unique_ptr<class BiomeSource> _makeBiomeSource(uint, class Dimension const&);
+    MCAPI static std::unique_ptr<class BiomeSource> _makeBiomeSource(uint seed, class Dimension const& dimension);
 
     // symbol:
     // ?_makeCommonNodeGraph@OverworldGenerator2d@@CA?AV?$shared_ptr@V?$OperationNode@PEAVBiome@@VPos2d@@@@@std@@W4GeneratorType@@AEBVBiomeRegistry@@@Z
     MCAPI static std::shared_ptr<class OperationNode<class Biome*, class Pos2d>>
-    _makeCommonNodeGraph(::GeneratorType, class BiomeRegistry const&);
+    _makeCommonNodeGraph(::GeneratorType generatorType, class BiomeRegistry const& biomeRegistry);
 
     // NOLINTEND
 };

@@ -2,7 +2,27 @@
 #include "ll/api/event/Emitter.h"
 #include "ll/api/memory/Hook.h"
 
-namespace ll::event::player {
+#include "mc/nbt/CompoundTag.h"
+
+namespace ll::event::inline player {
+
+void PlayerChangePermEvent::serialize(CompoundTag& nbt) const {
+    Cancellable::serialize(nbt);
+    nbt["permission"] = magic_enum::enum_name(newPerm());
+}
+
+void PlayerChangePermEvent::deserialize(CompoundTag const& nbt) {
+    Cancellable::deserialize(nbt);
+#if _HAS_CXX23
+    magic_enum::enum_cast<CommandPermissionLevel>((std::string_view)nbt["permission"])
+        .transform([this](CommandPermissionLevel val) {
+            newPerm() = val;
+            return true;
+        });
+#endif
+}
+
+CommandPermissionLevel& PlayerChangePermEvent::newPerm() const { return mMewPerm; }
 
 LL_TYPED_INSTANCE_HOOK(
     PlayerChangePermEventHook,
@@ -20,13 +40,13 @@ LL_TYPED_INSTANCE_HOOK(
     origin(perm);
 }
 
-class PlayerChangePermEventEmitter : public Emitter<PlayerChangePermEvent> {
-public:
-    PlayerChangePermEventEmitter() { PlayerChangePermEventHook::hook(); }
-    ~PlayerChangePermEventEmitter() override { PlayerChangePermEventHook::unhook(); }
+static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&);
+class PlayerChangePermEventEmitter : public Emitter<PlayerChangePermEvent, emitterFactory> {
+    memory::HookRegistrar<PlayerChangePermEventHook> hook;
 };
 
-std::unique_ptr<EmitterBase> PlayerChangePermEvent::emitterFactory(ListenerBase&) {
+static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&) {
     return std::make_unique<PlayerChangePermEventEmitter>();
 }
-} // namespace ll::event::player
+
+} // namespace ll::event::inline player

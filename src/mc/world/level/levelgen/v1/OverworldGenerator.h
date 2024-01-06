@@ -62,9 +62,13 @@ public:
 
     // vIndex: 45, symbol:
     // ?decorateWorldGenLoadChunk@OverworldGenerator@@MEBAXAEAVBiome@@AEAVLevelChunk@@AEAVBlockVolumeTarget@@AEAVRandom@@AEBVChunkPos@@@Z
-    virtual void
-    decorateWorldGenLoadChunk(class Biome&, class LevelChunk&, class BlockVolumeTarget&, class Random&, class ChunkPos const&)
-        const;
+    virtual void decorateWorldGenLoadChunk(
+        class Biome&             biome,
+        class LevelChunk&        lc,
+        class BlockVolumeTarget& target,
+        class Random&            random,
+        class ChunkPos const&    pos
+    ) const;
 
     // vIndex: 47
     virtual class Util::MultidimensionalArray<float, 5, 5, 41>
@@ -79,7 +83,12 @@ public:
     // vIndex: 50, symbol:
     // ?tryMakeAquifer@OverworldGenerator@@MEBA?AV?$unique_ptr@VAquifer@@U?$default_delete@VAquifer@@@std@@@std@@AEBVChunkPos@@AEBVSurfaceLevelCache@@FFF@Z
     virtual std::unique_ptr<class Aquifer>
-    tryMakeAquifer(class ChunkPos const&, class SurfaceLevelCache const&, short, short, short) const;
+    tryMakeAquifer(class ChunkPos const&chunkPos,
+        class SurfaceLevelCache const& surfaceLevelCache,
+        short                          minHeight,
+        short                          levelGenHeight,
+        short                          seaLevel
+    ) const;
 
     // vIndex: 51, symbol: ?createNoiseCache@OverworldGenerator@@MEBA?AVChunkLocalNoiseCache@@VChunkPos@@@Z
     virtual class ChunkLocalNoiseCache createNoiseCache(class ChunkPos) const;
@@ -110,12 +119,12 @@ public:
 
     // symbol:
     // ??0OverworldGenerator@@QEAA@AEAVDimension@@_NV?$unique_ptr@VStructureFeatureRegistry@@U?$default_delete@VStructureFeatureRegistry@@@std@@@std@@@Z
-    MCAPI OverworldGenerator(class Dimension&, bool, std::unique_ptr<class StructureFeatureRegistry>);
+    MCAPI OverworldGenerator(class Dimension& dimension, bool, std::unique_ptr<class StructureFeatureRegistry>);
 
     // symbol:
     // ?buildSurfaces@OverworldGenerator@@QEAAXAEAUThreadData@1@AEAVBlockVolume@@AEAVLevelChunk@@AEBVChunkPos@@AEBVSurfaceLevelCache@@@Z
     MCAPI void
-    buildSurfaces(struct OverworldGenerator::ThreadData&, class BlockVolume&, class LevelChunk&, class ChunkPos const&, class SurfaceLevelCache const&);
+    buildSurfaces(struct OverworldGenerator::ThreadData& thread, class BlockVolume& blocks, class LevelChunk& levelChunk, class ChunkPos const& chunkPos, class SurfaceLevelCache const&);
 
     // NOLINTEND
 };

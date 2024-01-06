@@ -30,17 +30,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@GuiDataPickItemPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@GuiDataPickItemPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0GuiDataPickItemPacket@@QEAA@XZ
     MCAPI GuiDataPickItemPacket();
 
     // symbol: ??0GuiDataPickItemPacket@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0AEBH@Z
-    MCAPI GuiDataPickItemPacket(std::string const&, std::string const&, int const&);
+    MCAPI GuiDataPickItemPacket(std::string const& name, std::string const& effect, int const& slot);
 
     // NOLINTEND
 };

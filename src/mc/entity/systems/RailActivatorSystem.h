@@ -21,7 +21,7 @@ public:
     virtual void __unk_vfn_1();
 
     // vIndex: 2, symbol: ?tick@RailActivatorSystem@@UEAAXAEAVEntityRegistry@@@Z
-    virtual void tick(class EntityRegistry&);
+    virtual void tick(class EntityRegistry& registry);
 
     // NOLINTEND
 
@@ -29,7 +29,11 @@ public:
     // NOLINTBEGIN
     // symbol:
     // ?_tickComponent@RailActivatorSystem@@CAXAEAVEntityContext@@AEAVActorOwnerComponent@@AEAVRailActivatorComponent@@@Z
-    MCAPI static void _tickComponent(class EntityContext&, class ActorOwnerComponent&, class RailActivatorComponent&);
+    MCAPI static void _tickComponent(
+        class EntityContext& entity,
+        class ActorOwnerComponent&,
+        class RailActivatorComponent& railActivatorComponent
+    );
 
     // NOLINTEND
 };

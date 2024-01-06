@@ -15,10 +15,10 @@ public:
     MCAPI short getCooldownCounter() const;
 
     // symbol: ?getInteraction@InteractComponent@@QEAA_NAEAVActor@@AEAVPlayer@@AEAVActorInteraction@@@Z
-    MCAPI bool getInteraction(class Actor&, class Player&, class ActorInteraction&);
+    MCAPI bool getInteraction(class Actor& owner, class Player& player, class ActorInteraction& interaction);
 
     // symbol: ?setCooldownCounter@InteractComponent@@QEAAXF@Z
-    MCAPI void setCooldownCounter(short);
+    MCAPI void setCooldownCounter(short counter);
 
     // NOLINTEND
 
@@ -26,11 +26,16 @@ public:
     // NOLINTBEGIN
     // symbol:
     // ?_runInteraction@InteractComponent@@AEAA_NAEAVActor@@AEBUInteraction@@AEAVPlayer@@AEAVActorInteraction@@@Z
-    MCAPI bool _runInteraction(class Actor&, struct Interaction const&, class Player&, class ActorInteraction&);
+    MCAPI bool _runInteraction(
+        class Actor&              owner,
+        struct Interaction const& desc,
+        class Player&             player,
+        class ActorInteraction&   interaction
+    );
 
     // symbol: ?_tryEquipitem@InteractComponent@@CAXAEAVActor@@AEAVPlayer@@AEAVItemStack@@AEBV4@HAEA_N4@Z
     MCAPI static void
-    _tryEquipitem(class Actor&, class Player&, class ItemStack&, class ItemStack const&, int, bool&, bool&);
+    _tryEquipitem(class Actor& owner, class Player& player, class ItemStack&, class ItemStack const&, int slot, bool&, bool&);
 
     // NOLINTEND
 };

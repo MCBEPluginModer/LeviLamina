@@ -12,9 +12,6 @@
 namespace ll::memory {
 
 using FuncPtr = void*;
-using Handle  = void*;
-
-extern "C" struct _IMAGE_DOS_HEADER __ImageBase; // NOLINT(bugprone-reserved-identifier)
 
 template <class T>
     requires(sizeof(T) == sizeof(FuncPtr))
@@ -58,12 +55,14 @@ inline void memcpy_t(void* dst, void const* src) {
  */
 LLNDAPI FuncPtr resolveSymbol(char const* symbol);
 
+LLNDAPI FuncPtr resolveSymbol(std::string_view symbol, bool disableErrorOutput);
+
 /**
  * @brief resolve signature to function pointer
  * @param t Signature
  * @return function pointer
  */
-LLNDAPI FuncPtr resolveSignature(char const* signature);
+LLNDAPI FuncPtr resolveSignature(std::string_view signature);
 
 /**
  * @brief lookup symbol name of a function address
@@ -81,18 +80,14 @@ LLNDAPI std::vector<std::string> lookupSymbol(FuncPtr func);
  */
 LLAPI void modify(void* ptr, size_t len, const std::function<void()>& callback);
 
-LLAPI Handle getModuleHandle(void* addr);
-
-inline Handle getCurrentModuleHandle() { return &__ImageBase; }
-
 template <class T>
 inline void modify(T& ref, std::function<void(std::remove_cvref_t<T>&)> const& f) {
     modify((void*)std::addressof(ref), sizeof(T), [&] { f((std::remove_cvref_t<T>&)(ref)); });
 }
 
 template <class RTN = void, class... Args>
-constexpr auto virtualCall(void const* self, uintptr_t off, Args&&... args) -> RTN {
-    return (*(RTN(**)(void const*, Args&&...))(*(uintptr_t*)self + off))(self, std::forward<Args>(args)...);
+constexpr auto virtualCall(void const* self, ptrdiff_t vIndex, Args... args) -> RTN {
+    return (*(RTN(**)(void const*, Args...))(*(uintptr_t**)self + vIndex))(self, std::forward<Args>(args)...);
 }
 
 template <class T>
@@ -116,6 +111,13 @@ constexpr auto construct(void* ptr, ptrdiff_t off, Types&&... args) {
         std::launder(reinterpret_cast<T*>((uintptr_t)((uintptr_t)ptr + off))),
         std::forward<Types>(args)...
     );
+}
+
+constexpr void* unwrapFuncPtrJmp(void* ptr) noexcept { // only used for unstriped symbol
+    if (*(char*)ptr == '\xE9') {
+        (uintptr_t&)(ptr) += *(int*)((uintptr_t)ptr + 1);
+    }
+    return ptr;
 }
 
 [[nodiscard]] inline size_t getMemSizeFromPtr(void* ptr) {

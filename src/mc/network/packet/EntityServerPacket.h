@@ -22,17 +22,17 @@ public:
     virtual ~EntityServerPacket();
 
     // vIndex: 3, symbol: ?write@EntityServerPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@EntityServerPacket@@MEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0EntityServerPacket@@QEAA@XZ
     MCAPI EntityServerPacket();
 
     // symbol: ??0EntityServerPacket@@QEAA@AEBVEntityContext@@@Z
-    MCAPI explicit EntityServerPacket(class EntityContext const&);
+    MCAPI explicit EntityServerPacket(class EntityContext const& entity);
 
     // NOLINTEND
 };

@@ -40,17 +40,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@AddItemActorPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@AddItemActorPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0AddItemActorPacket@@QEAA@XZ
     MCAPI AddItemActorPacket();
 
     // symbol: ??0AddItemActorPacket@@QEAA@AEAVItemActor@@@Z
-    MCAPI explicit AddItemActorPacket(class ItemActor&);
+    MCAPI explicit AddItemActorPacket(class ItemActor& itemEntity);
 
     // NOLINTEND
 };

@@ -34,11 +34,11 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@SetActorDataPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
-    // ?_read@SetActorDataPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    // ?_read@SetActorDataPacket@@MEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0SetActorDataPacket@@QEAA@XZ
     MCAPI SetActorDataPacket();
@@ -46,10 +46,10 @@ public:
     // symbol:
     // ??0SetActorDataPacket@@QEAA@VActorRuntimeID@@AEAVSynchedActorDataEntityWrapper@@PEAVPropertyComponent@@_K_N@Z
     MCAPI SetActorDataPacket(
-        class ActorRuntimeID,
-        class SynchedActorDataEntityWrapper&,
+        class ActorRuntimeID                 id,
+        class SynchedActorDataEntityWrapper& entityData,
         class PropertyComponent*,
-        uint64,
+        uint64 tick,
         bool
     );
 

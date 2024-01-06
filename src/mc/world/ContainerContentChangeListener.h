@@ -12,7 +12,7 @@ public:
 public:
     // NOLINTBEGIN
     // vIndex: 0, symbol: ?containerContentChanged@ContainerModel@@UEAAXH@Z
-    virtual void containerContentChanged(int) = 0;
+    virtual void containerContentChanged(int slot) = 0;
 
     // vIndex: 1, symbol: ??1ContainerContentChangeListener@@UEAA@XZ
     virtual ~ContainerContentChangeListener();

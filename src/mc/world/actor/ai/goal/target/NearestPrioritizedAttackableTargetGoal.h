@@ -20,27 +20,27 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@NearestPrioritizedAttackableTargetGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 11, symbol:
     // ?_findTarget@NearestPrioritizedAttackableTargetGoal@@EEAA?AUActorUniqueID@@PEAPEBUMobDescriptor@@@Z
-    virtual struct ActorUniqueID _findTarget(struct MobDescriptor const**);
+    virtual struct ActorUniqueID _findTarget(struct MobDescriptor const** outMobDescriptor);
 
     // symbol:
     // ??0NearestPrioritizedAttackableTargetGoal@@QEAA@AEAVMob@@AEBV?$vector@UMobDescriptor@@V?$allocator@UMobDescriptor@@@std@@@std@@MH_NH22HM2H2@Z
     MCAPI NearestPrioritizedAttackableTargetGoal(
-        class Mob&,
-        std::vector<struct MobDescriptor> const&,
-        float,
+        class Mob&                               mob,
+        std::vector<struct MobDescriptor> const& targetTypes,
+        float                                    within,
         int,
-        bool,
-        int,
-        bool,
-        bool,
-        int,
-        float,
-        bool,
-        int,
+        bool  mustSee,
+        int   mustSeeForgetTicks,
+        bool  mustReach,
+        bool  reselectTargets,
+        int   scanInterval,
+        float targetSearchHeight,
+        bool  attackOwner,
+        int   persistTargetTicks,
         bool
     );
 

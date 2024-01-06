@@ -1,3 +1,4 @@
+#pragma once
 /**
  *
  * @brief Logger System - Log text to console, file and player easily
@@ -13,8 +14,6 @@
  * @endcode
  */
 
-#pragma once
-
 #include "ll/api/base/Concepts.h"
 #include "ll/api/i18n/I18nAPI.h"
 
@@ -29,15 +28,16 @@
 
 #include "fmt/chrono.h"
 #include "fmt/color.h"
-#include "fmt/core.h"
+#include "fmt/compile.h"
+#include "fmt/format.h"
 #include "fmt/os.h"
-#include "fmt/printf.h"
+#include "fmt/ranges.h"
 #include "fmt/std.h"
 
 namespace ll {
 class Logger {
 public:
-    using PlayerOutputFunc = std::function<void(std::string_view)>;
+    using player_output_fn = std::function<void(std::string_view)>;
 
     class OutputStream {
         friend class Logger;
@@ -53,16 +53,16 @@ public:
         std::array<std::string, 5>     consoleFormat;
         std::array<std::string, 5>     fileFormat;
         std::array<std::string, 5>     playerFormat;
-        PlayerOutputFunc               playerOutputCallback;
+        player_output_fn               playerOutputCallback;
 
         LLAPI explicit OutputStream(
             Logger&                               logger,
             std::string                           levelPrefix,
             int                                   level,
-            std::array<fmt::text_style, 4> const& style         = {{}},
-            std::array<std::string, 5> const&     playerFormat  = {"<{2}|{1}> [{0}] {3}", "{:%T}", "{}", "{}", "{}"},
-            std::array<std::string, 5> const&     consoleFormat = {"{0} {1} {2} {3}", "{:%T}", "{}", "[{}]", "{}"},
-            std::array<std::string, 5> const&     fileFormat    = {"[{0} {1}][{2}] {3}", "{:%F %T}", "{}", "{}", "{}"}
+            std::array<fmt::text_style, 4> const& style        = {{}},
+            std::array<std::string, 5> const&     playerFormat = {"<{2}|{1}> [{0}] {3}", "{:%T}", "{}", "{}", "{}"},
+            std::array<std::string, 5> const& consoleFormat = {"{0} {1} {2} {3}", "{:%T}.{:0>3}", "{}", "[{}]", "{}"},
+            std::array<std::string, 5> const& fileFormat = {"[{0} {1}][{2}] {3}", "{:%F %T}.{:0>3}", "{}", "{}", "{}"}
         );
 
         template <ll::concepts::IsString S, class... Args>
@@ -74,7 +74,7 @@ public:
             }
         }
 
-        void setPlayerOutputFunc(PlayerOutputFunc const& func) { playerOutputCallback = func; }
+        void setPlayerOutputFunc(player_output_fn const& func) { playerOutputCallback = func; }
     };
 
 public:
@@ -83,6 +83,7 @@ public:
     int                          consoleLevel = -1;
     int                          fileLevel    = -1;
     int                          playerLevel  = -1;
+    bool                         ignoreConfig = false;
 
     OutputStream debug;
     OutputStream info;
@@ -90,16 +91,54 @@ public:
     OutputStream error;
     OutputStream fatal;
 
-    LLNDAPI explicit Logger(std::string_view title = __builtin_FUNCTION());
+    Logger(Logger&& other)
+    : title(std::move(other.title)),
+      ofs(std::move(other.ofs)),
+      consoleLevel(other.consoleLevel),
+      fileLevel(other.fileLevel),
+      playerLevel(other.playerLevel),
+      ignoreConfig(other.ignoreConfig),
+      debug(std::move(other.debug)),
+      info(std::move(other.info)),
+      warn(std::move(other.warn)),
+      error(std::move(other.error)),
+      fatal(std::move(other.fatal)) {
+        debug.logger = this;
+        info.logger  = this;
+        warn.logger  = this;
+        error.logger = this;
+        fatal.logger = this;
+    }
+    Logger& operator=(Logger&& other) {
+        title        = std::move(other.title);
+        ofs          = std::move(other.ofs);
+        consoleLevel = other.consoleLevel;
+        fileLevel    = other.fileLevel;
+        playerLevel  = other.playerLevel;
+        ignoreConfig = other.ignoreConfig;
+        debug        = std::move(other.debug);
+        info         = std::move(other.info);
+        warn         = std::move(other.warn);
+        error        = std::move(other.error);
+        fatal        = std::move(other.fatal);
+        debug.logger = this;
+        info.logger  = this;
+        warn.logger  = this;
+        error.logger = this;
+        fatal.logger = this;
+        return *this;
+    }
+
+    LLNDAPI explicit Logger(std::string_view title = __builtin_FUNCTION(), bool ignoreConfig = false);
 
     ~Logger() { resetFile(); }
 
     LLAPI void resetFile();
-    LLAPI bool setFile(std::string const& logFile, bool appendMode = true);
+    LLAPI bool setFile(std::filesystem::path const& logFile, bool appendMode = true);
 
-    LLAPI static bool setDefaultFile(std::string const& logFile, bool appendMode);
+    LLAPI static bool setDefaultFile(std::filesystem::path const& logFile, bool appendMode);
 
-    void setPlayerOutputFunc(PlayerOutputFunc const& func) {
+    void setPlayerOutputFunc(player_output_fn const& func) {
         debug.setPlayerOutputFunc(func);
         info.setPlayerOutputFunc(func);
         warn.setPlayerOutputFunc(func);
@@ -107,7 +146,7 @@ public:
         fatal.setPlayerOutputFunc(func);
     }
 
-    LLAPI static void setDefaultPlayerOutputFunc(PlayerOutputFunc const& func) { defaultPlayerOutputCallback = func; }
+    LLAPI static void setDefaultPlayerOutputFunc(player_output_fn const& func) { defaultPlayerOutputCallback = func; }
 
     std::ofstream& getFile() {
         if (ofs) {
@@ -120,6 +159,6 @@ public:
 
 private:
     LLAPI static std::ofstream    defaultFile;
-    LLAPI static PlayerOutputFunc defaultPlayerOutputCallback;
+    LLAPI static player_output_fn defaultPlayerOutputCallback;
 };
 } // namespace ll

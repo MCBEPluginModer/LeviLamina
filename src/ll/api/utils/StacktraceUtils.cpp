@@ -14,12 +14,13 @@
 
 #include "DbgEng.h"
 
-namespace ll::utils::stacktrace_utils {
+namespace ll::inline utils::stacktrace_utils {
 namespace detail {
 static void lockRelease() noexcept;
 
 class [[nodiscard]] DbgEngData {
 public:
+    // NOLINTBEGIN(readability-convert-member-functions-to-static)
     DbgEngData() noexcept { AcquireSRWLockExclusive(&srw); }
 
     ~DbgEngData() { ReleaseSRWLockExclusive(&srw); }
@@ -27,7 +28,7 @@ public:
     DbgEngData(const DbgEngData&)            = delete;
     DbgEngData& operator=(const DbgEngData&) = delete;
 
-    void release() noexcept { // NOLINT(readability-convert-member-functions-to-static)
+    void release() noexcept {
         // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
 
         if (debugClient != nullptr) {
@@ -58,7 +59,7 @@ public:
         initializeAttempted = false;
     }
 
-    [[nodiscard]] bool tryInit() noexcept { // NOLINT(readability-convert-member-functions-to-static)
+    [[nodiscard]] bool tryInit() noexcept {
         if (!initializeAttempted) {
             initializeAttempted = true;
 
@@ -109,9 +110,7 @@ public:
         return attached;
     }
 
-    auto getInfo( // NOLINT(readability-convert-member-functions-to-static)
-        const void* const address
-    ) {
+    auto getInfo(const void* const address) {
         std::optional<size_t> displacement = 0;
         std::string           name;
         std::optional<ulong>  line = 0;
@@ -139,6 +138,13 @@ public:
         return std::make_tuple(displacement, name, line, file);
     }
 
+    uintptr_t getSymbol(std::string_view sv) {
+        if (uintptr_t res{}; S_OK == debugSymbols->GetOffsetByName(sv.data(), &res)) {
+            return res;
+        }
+        return 0;
+    }
+    // NOLINTEND(readability-convert-member-functions-to-static)
 private:
     inline static SRWLOCK        srw                 = SRWLOCK_INIT;
     inline static IDebugClient*  debugClient         = nullptr;
@@ -157,23 +163,46 @@ void lockRelease() noexcept {
 } // namespace detail
 using namespace detail;
 
+
+std::atomic_ullong SymbolLoader::count{};
+
 SymbolLoader::SymbolLoader() : handle(GetCurrentProcess()) {
+    if (count > 0) {
+        return;
+    }
     if (!SymInitializeW(handle, nullptr, true)) {
         throw error_info::getWinLastError();
     }
+    count++;
     DWORD options  = SymGetOptions();
     options       |= SYMOPT_LOAD_LINES | SYMOPT_EXACT_SYMBOLS;
     SymSetOptions(options);
 }
-SymbolLoader::SymbolLoader(std::string const& path) : handle(GetCurrentProcess()) {
-    if (!SymInitializeW(handle, string_utils::str2wstr(path).c_str(), true)) {
+SymbolLoader::SymbolLoader(std::string_view extra) : handle(GetCurrentProcess()) {
+    if (count > 0) {
+        return;
+    }
+    if (!SymInitializeW(handle, string_utils::str2wstr(extra).c_str(), true)) {
         throw error_info::getWinLastError();
     }
+    count++;
     DWORD options  = SymGetOptions();
     options       |= SYMOPT_LOAD_LINES | SYMOPT_EXACT_SYMBOLS;
     SymSetOptions(options);
 }
-SymbolLoader::~SymbolLoader() { SymCleanup(handle); }
+SymbolLoader::~SymbolLoader() {
+    if (--count == 0) {
+        SymCleanup(handle);
+    }
+}
+
+uintptr_t tryGetSymbolAddress(std::string_view symbol) {
+    DbgEngData data;
+    if (!data.tryInit()) {
+        return 0;
+    }
+    return data.getSymbol(symbol);
+}
 
 std::string toString(std::stacktrace_entry const& entry) {
     std::string res = fmt::format("at: 0x{:0>12X}", (uint64)entry.native_handle());
@@ -185,8 +214,7 @@ std::string toString(std::stacktrace_entry const& entry) {
     auto [displacement, name, line, file] = data.getInfo(entry.native_handle());
     std::string module;
     std::string function;
-    if (name.contains('!')) {
-        auto pos = name.find_first_of('!');
+    if (auto pos = name.find('!'); pos != std::string_view::npos) {
         function = name.substr(1 + pos);
         module   = name.substr(0, pos);
     } else {
@@ -236,6 +264,6 @@ std::string toString(_CONTEXT const& c) {
                c.SegSs
          );
 }
-} // namespace ll::utils::stacktrace_utils
+} // namespace ll::inline utils::stacktrace_utils
 
 #endif

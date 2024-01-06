@@ -3,17 +3,14 @@
 #include "mc/_HeaderOutputPredefine.h"
 
 // auto generated inclusion list
+#include "mc/dataloadhelper/DataLoadHelper.h"
 #include "mc/enums/DataLoadHelperType.h"
 #include "mc/enums/Mirror.h"
 #include "mc/enums/Rotation.h"
 #include "mc/world/Direction.h"
 #include "mc/world/actor/InternalComponentRegistry.h"
-#include "mc/world/level/levelgen/structure/DataLoadHelper.h"
 
 class DefaultDataLoadHelper : public ::DataLoadHelper {
-public:
-    LLAPI static DefaultDataLoadHelper globalHelper;
-
 public:
     // NOLINTBEGIN
     // vIndex: 0, symbol: __gen_??1DefaultDataLoadHelper@@UEAA@XZ
@@ -63,8 +60,10 @@ public:
 
     // vIndex: 15, symbol:
     // ?loadActorInternalComponentInfo@DefaultDataLoadHelper@@UEAAPEBUComponentInfo@InternalComponentRegistry@@AEBV?$unordered_map@VHashedString@@UComponentInfo@InternalComponentRegistry@@U?$hash@VHashedString@@@std@@U?$equal_to@VHashedString@@@5@V?$allocator@U?$pair@$$CBVHashedString@@UComponentInfo@InternalComponentRegistry@@@std@@@5@@std@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@5@@Z
-    virtual struct InternalComponentRegistry::ComponentInfo const*
-    loadActorInternalComponentInfo(std::unordered_map<class HashedString, struct InternalComponentRegistry::ComponentInfo> const&, std::string const&);
+    virtual struct InternalComponentRegistry::ComponentInfo const* loadActorInternalComponentInfo(
+        std::unordered_map<class HashedString, struct InternalComponentRegistry::ComponentInfo> const& registry,
+        std::string const&                                                                             componentName
+    );
 
     // vIndex: 16, symbol: ?getType@DefaultDataLoadHelper@@UEBA?AW4DataLoadHelperType@@XZ
     virtual ::DataLoadHelperType getType() const;
@@ -73,3 +72,5 @@ public:
     virtual bool shouldResetTime();
     // NOLINTEND
 };
+
+static inline DefaultDataLoadHelper defaultDataLoadHelper;

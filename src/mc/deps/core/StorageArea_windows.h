@@ -84,7 +84,7 @@ public:
     virtual uint64 getAvailableUserStorageSize();
 
     // vIndex: 19, symbol: ?unloadFlatFileManifests@FileStorageArea@Core@@UEAAX_N@Z
-    virtual void unloadFlatFileManifests(bool);
+    virtual void unloadFlatFileManifests(bool shouldClearManifests);
 
     // vIndex: 20, symbol: __unk_vfn_20
     virtual void __unk_vfn_20();
@@ -104,14 +104,14 @@ public:
     // vIndex: 25, symbol: __unk_vfn_25
     virtual void __unk_vfn_25();
 
-    // vIndex: 26, symbol: ?setSaveDataIcon@FileStorageArea@Core@@UEAA?AVResult@2@AEBVPath@2@@Z
-    virtual class Core::Result setSaveDataIcon(class Core::Path const&);
+    // vIndex: 26, symbol: __unk_vfn_26
+    virtual void __unk_vfn_26();
 
     // vIndex: 27, symbol: ?shouldAllowCommit@FileStorageArea@Core@@UEBA_NXZ
     virtual bool shouldAllowCommit() const;
 
     // vIndex: 28, symbol: ?trackBytesWritten@FileStorageArea@Core@@UEAAXAEBVPath@2@_KW4WriteOperation@2@@Z
-    virtual void trackBytesWritten(class Core::Path const&, uint64, ::Core::WriteOperation);
+    virtual void trackBytesWritten(class Core::Path const&, uint64 amount, ::Core::WriteOperation);
 
     // vIndex: 29, symbol: ?trackWriteOperation@FileStorageArea@Core@@UEAAXAEBVPath@2@W4WriteOperation@2@@Z
     virtual void trackWriteOperation(class Core::Path const&, ::Core::WriteOperation);

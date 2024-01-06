@@ -38,17 +38,23 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@UpdateEquipPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& bitStream) const;
 
     // vIndex: 7, symbol:
     // ?_read@UpdateEquipPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0UpdateEquipPacket@@QEAA@XZ
     MCAPI UpdateEquipPacket();
 
     // symbol: ??0UpdateEquipPacket@@QEAA@W4ContainerID@@W4ContainerType@@H$$QEAVCompoundTag@@AEBUActorUniqueID@@@Z
-    MCAPI UpdateEquipPacket(::ContainerID, ::ContainerType, int, class CompoundTag&&, struct ActorUniqueID const&);
+    MCAPI UpdateEquipPacket(
+        ::ContainerID               containerID,
+        ::ContainerType             type,
+        int                         size,
+        class CompoundTag&&         tag,
+        struct ActorUniqueID const& entityID
+    );
 
     // NOLINTEND
 };

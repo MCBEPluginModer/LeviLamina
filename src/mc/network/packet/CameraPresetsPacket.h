@@ -10,8 +10,7 @@
 
 class CameraPresetsPacket : public ::Packet {
 public:
-    CameraPresets                          mData;
-    std::vector<CameraPresets::CameraList> mList;
+    CameraPresets mData;
 
     // prevent constructor by default
     CameraPresetsPacket& operator=(CameraPresetsPacket const&);
@@ -30,15 +29,15 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@CameraPresetsPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 4, symbol:
     // ?read@CameraPresetsPacket@@UEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> read(class ReadOnlyBinaryStream& stream);
 
     // vIndex: 7, symbol:
     // ?_read@CameraPresetsPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0CameraPresetsPacket@@QEAA@XZ
     MCAPI CameraPresetsPacket();

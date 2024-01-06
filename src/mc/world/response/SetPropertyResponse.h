@@ -29,13 +29,16 @@ public:
     virtual std::string const& getName() const;
 
     // vIndex: 2, symbol: ?executeAction@SetPropertyResponse@@UEBAXAEAVRenderParams@@@Z
-    virtual void executeAction(class RenderParams&) const;
+    virtual void executeAction(class RenderParams& params) const;
 
     // vIndex: 3, symbol:
     // ?buildSchema@SetPropertyResponse@@UEBAXAEAV?$shared_ptr@V?$JsonSchemaObjectNode@VEmptyClass@JsonUtil@@UActorEventResponseCollection@@@JsonUtil@@@std@@AEBV?$Factory@VActorEventResponse@@$$V@@@Z
-    virtual void
-    buildSchema(std::shared_ptr<class JsonUtil::JsonSchemaObjectNode<class JsonUtil::EmptyClass, struct ActorEventResponseCollection>>&, class Factory<class ActorEventResponse> const&)
-        const;
+    virtual void buildSchema(
+        std::shared_ptr<
+            class JsonUtil::JsonSchemaObjectNode<class JsonUtil::EmptyClass, struct ActorEventResponseCollection>>&
+                                                       root,
+        class Factory<class ActorEventResponse> const& factory
+    ) const;
 
     // symbol: ?NameID@SetPropertyResponse@@2V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
     MCAPI static std::string const NameID;

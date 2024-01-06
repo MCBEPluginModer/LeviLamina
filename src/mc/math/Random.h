@@ -36,7 +36,7 @@ public:
     virtual int nextInt();
 
     // vIndex: 2, symbol: ?nextInt@Random@Core@@UEAAHH@Z
-    virtual int nextInt(int);
+    virtual int nextInt(int n);
 
     // vIndex: 3, symbol: ?nextLong@Random@Core@@UEAA_JXZ
     virtual int64 nextLong();
@@ -54,7 +54,7 @@ public:
     virtual double nextGaussianDouble();
 
     // vIndex: 8, symbol: ?consumeCount@Random@Core@@UEAAXI@Z
-    virtual void consumeCount(uint);
+    virtual void consumeCount(uint count);
 
     // vIndex: 9, symbol: ?fork@Random@Core@@UEAA?AV?$unique_ptr@VIRandom@@U?$default_delete@VIRandom@@@std@@@std@@XZ
     virtual std::unique_ptr<class IRandom> fork();

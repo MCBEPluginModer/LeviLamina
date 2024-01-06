@@ -2,16 +2,15 @@
 
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
+
+#include "ll/api/base/Macro.h"
 
 template <typename T>
     requires(!std::is_reference_v<T>)
 class optional_ref {
 private:
-    T* const mPtr = nullptr;
-
-    template <typename U>
-    static constexpr bool IsCompatibleV =
-        std::is_same_v<std::decay_t<T>, std::decay_t<U>> && std::is_convertible_v<U*, T*>;
+    T* mPtr = nullptr;
     // NOLINTBEGIN
 public:
     [[nodiscard]] constexpr optional_ref() noexcept = default;
@@ -20,40 +19,42 @@ public:
 
     [[nodiscard]] constexpr optional_ref(std::nullptr_t) noexcept {}
 
-    template <typename U>
-    [[nodiscard]] constexpr optional_ref(std::optional<U>& o)
-        requires(IsCompatibleV<U>)
-    : mPtr(o ? &*o : nullptr) {}
+    template <class U>
+        requires(std::is_convertible_v<U*, T*>)
+    [[nodiscard]] constexpr optional_ref(std::optional<U>& o) : mPtr(o ? &*o : nullptr) {}
 
-    template <typename U>
-    [[nodiscard]] constexpr optional_ref(U* p)
-        requires(IsCompatibleV<U>)
-    : mPtr(p) {}
 
-    template <typename U>
-    [[nodiscard]] constexpr optional_ref(U& r)
-        requires(IsCompatibleV<U>)
-    : mPtr(std::addressof(r)) {}
+    template <class U>
+        requires(std::is_convertible_v<U*, T*>)
+    [[nodiscard]] constexpr optional_ref(U* p) : mPtr(p) {}
 
-    template <typename U>
-    [[nodiscard]] constexpr optional_ref(U const& r)
-        requires(IsCompatibleV<U>)
-    : mPtr(std::addressof(r)) {}
 
-    template <typename U>
-    [[nodiscard]] constexpr optional_ref(const std::optional<U>& o)
-        requires(std::is_const_v<T> && IsCompatibleV<U>)
-    : mPtr(o ? &*o : nullptr) {}
+    template <class U>
+        requires(std::is_convertible_v<U*, T*>)
+    [[nodiscard]] constexpr optional_ref(U& r) : mPtr(std::addressof(r)) {}
 
+
+    template <class U>
+        requires(std::is_convertible_v<U*, T*>)
+    [[nodiscard]] constexpr optional_ref(U const& r) : mPtr(std::addressof(r)) {}
+
+
+    template <class U>
+        requires(std::is_convertible_v<U*, T*>)
+    [[nodiscard]] constexpr optional_ref(const std::optional<U>& o) : mPtr(o ? &*o : nullptr) {}
 
     template <typename U = T>
     [[nodiscard]] constexpr optional_ref(optional_ref<std::remove_const_t<U>> rhs)
         requires(std::is_const_v<U>)
     : mPtr(rhs.as_ptr()) {}
 
-    [[nodiscard]] constexpr optional_ref(optional_ref const&) = default;
+    [[nodiscard]] constexpr optional_ref(optional_ref&&) noexcept = default;
 
-    optional_ref& operator=(optional_ref const& other) = delete;
+    LL_CLANG_CEXPR optional_ref& operator=(optional_ref&&) noexcept = default;
+
+    [[nodiscard]] constexpr optional_ref(optional_ref const&) noexcept = default;
+
+    LL_CLANG_CEXPR optional_ref& operator=(optional_ref const&) noexcept = default;
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept { return mPtr != nullptr; }
 
@@ -61,28 +62,33 @@ public:
 
     [[nodiscard]] constexpr T* as_ptr() const noexcept { return mPtr; }
 
-    [[nodiscard]] constexpr T* operator->() const {
-        if (!has_value()) { throw std::runtime_error{"bas optional_ref access"}; }
-        return mPtr;
-    }
     [[nodiscard]] constexpr T& get() const {
-        if (!has_value()) { throw std::runtime_error{"bas optional_ref access"}; }
+        if (!has_value()) {
+            throw std::runtime_error{"bad optional_ref access"};
+        }
         return *mPtr;
     }
 
     [[nodiscard]] constexpr T& value() const { return get(); }
-
     [[nodiscard]] constexpr T& operator*() const { return get(); }
+    [[nodiscard]] constexpr T* operator->() const { return &get(); }
+    [[nodiscard]] constexpr    operator T&() const { return get(); }
+    [[nodiscard]] constexpr    operator T*() const { return &get(); }
 
-    template <class T2>
-    [[nodiscard]] constexpr T& value_or(T2&& right) const {
-        if (has_value()) { return *mPtr; }
-        return std::forward<T2>(right);
+    template <class U>
+    [[nodiscard]] constexpr T& value_or(U& right) const& {
+        if (has_value()) {
+            return *mPtr;
+        }
+        return static_cast<T&>(right);
     }
 
-    [[nodiscard]] constexpr operator T&() const {
-        if (!has_value()) { throw std::runtime_error{"bas optional_ref access"}; }
-        return *mPtr;
+    template <class U>
+    [[nodiscard]] constexpr T value_or(U&& right) const {
+        if (has_value()) {
+            return *mPtr;
+        }
+        return std::forward<U>(right);
     }
 
     template <typename U = std::decay_t<T>>
@@ -97,6 +103,22 @@ public:
             -> decltype(std::invoke(*mPtr, static_cast<Types&&>(args)...)) {
         return std::invoke(*mPtr, static_cast<Types&&>(args)...);
     }
+    template <class Arg>
+    [[nodiscard]] constexpr decltype(auto) operator[](Arg&& index) const {
+        return get()[std::forward<Arg>(index)];
+    }
+    [[nodiscard]] constexpr decltype(auto) end() { return get().end(); }
+    [[nodiscard]] constexpr decltype(auto) begin() { return get().begin(); }
+    [[nodiscard]] constexpr decltype(auto) end() const { return get().end(); }
+    [[nodiscard]] constexpr decltype(auto) begin() const { return get().begin(); }
+    [[nodiscard]] constexpr decltype(auto) cend() const { return get().cend(); }
+    [[nodiscard]] constexpr decltype(auto) cbegin() const { return get().cbegin(); }
+    [[nodiscard]] constexpr decltype(auto) rend() { return get().rend(); }
+    [[nodiscard]] constexpr decltype(auto) rbegin() { return get().rbegin(); }
+    [[nodiscard]] constexpr decltype(auto) rend() const { return get().rend(); }
+    [[nodiscard]] constexpr decltype(auto) rbegin() const { return get().rbegin(); }
+    [[nodiscard]] constexpr decltype(auto) crend() const { return get().crend(); }
+    [[nodiscard]] constexpr decltype(auto) crbegin() const { return get().crbegin(); }
 };
 // NOLINTEND
 template <typename T>

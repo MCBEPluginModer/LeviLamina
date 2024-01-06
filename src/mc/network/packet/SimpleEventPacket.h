@@ -37,17 +37,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@SimpleEventPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@SimpleEventPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0SimpleEventPacket@@QEAA@XZ
     MCAPI SimpleEventPacket();
 
     // symbol: ??0SimpleEventPacket@@QEAA@AEBW4Subtype@0@@Z
-    MCAPI explicit SimpleEventPacket(::SimpleEventPacket::Subtype const&);
+    MCAPI explicit SimpleEventPacket(::SimpleEventPacket::Subtype const& st);
 
     // symbol: ?getSubtype@SimpleEventPacket@@QEBAAEBW4Subtype@1@XZ
     MCAPI ::SimpleEventPacket::Subtype const& getSubtype() const;

@@ -7,12 +7,15 @@
 namespace ll {
 enum class ServerStatus {
     Default = 0,
-    Running = 1,
+    Starting,
+    Running,
+    Stopping,
 };
+void setServerStatus(ServerStatus);
 
-LLNDAPI std::atomic<ServerStatus>& getServerStatus();
-LLNDAPI Version                    getBdsVersion();
-LLNDAPI Version                    getLoaderVersion();
-LLNDAPI int                        getServerProtocolVersion();
-LLNDAPI bool                       setServerMotd(std::string const& motd);
+LLNDAPI ServerStatus getServerStatus();
+LLNDAPI Version      getBdsVersion();
+LLNDAPI Version      getLoaderVersion();
+LLNDAPI int          getServerProtocolVersion();
+LLNDAPI bool         setServerMotd(std::string const& serverName, bool shouldAnnounce = true);
 } // namespace ll

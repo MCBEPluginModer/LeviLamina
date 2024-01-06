@@ -19,7 +19,7 @@ public:
 public:
     // NOLINTBEGIN
     // vIndex: 0, symbol: ?containerContentChanged@LevelContainerModel@@UEAAXH@Z
-    virtual void containerContentChanged(int);
+    virtual void containerContentChanged(int slot);
 
     // vIndex: 1, symbol: __gen_??1LevelContainerModel@@UEAA@XZ
     virtual ~LevelContainerModel() = default;
@@ -51,34 +51,44 @@ public:
     // vIndex: 19, symbol: __unk_vfn_19
     virtual void __unk_vfn_19();
 
-    // vIndex: 20, symbol: ?_getContainer@LevelContainerModel@@EEBAPEAVContainer@@XZ
+    // vIndex: 20, symbol: ?isSlotDisabled@LevelContainerModel@@UEBA_NH@Z
+    virtual bool isSlotDisabled(int) const;
+
+    // vIndex: 21, symbol: ?_getContainer@LevelContainerModel@@EEBAPEAVContainer@@XZ
     virtual class Container* _getContainer() const;
 
-    // vIndex: 21, symbol: ?_getContainerOffset@LevelContainerModel@@MEBAHXZ
+    // vIndex: 22, symbol: ?_getContainerOffset@LevelContainerModel@@MEBAHXZ
     virtual int _getContainerOffset() const;
 
-    // vIndex: 22, symbol: ?_onItemChanged@LevelContainerModel@@MEAAXHAEBVItemStack@@0@Z
-    virtual void _onItemChanged(int, class ItemStack const&, class ItemStack const&);
+    // vIndex: 24, symbol: ?_onItemChanged@LevelContainerModel@@MEAAXHAEBVItemStack@@0@Z
+    virtual void _onItemChanged(int, class ItemStack const& oldItem, class ItemStack const& newItem);
 
     // symbol: ??0LevelContainerModel@@QEAA@W4ContainerEnumName@@HAEAVPlayer@@UActorUniqueID@@W4ContainerCategory@@@Z
-    MCAPI LevelContainerModel(::ContainerEnumName, int, class Player&, struct ActorUniqueID, ::ContainerCategory);
+    MCAPI LevelContainerModel(
+        ::ContainerEnumName  containerName,
+        int                  containerSize,
+        class Player&        player,
+        struct ActorUniqueID entityId,
+        ::ContainerCategory  category
+    );
 
     // symbol:
     // ??0LevelContainerModel@@QEAA@W4ContainerEnumName@@HAEAVPlayer@@W4BlockActorType@@AEBVBlockPos@@W4ContainerCategory@@@Z
     MCAPI LevelContainerModel(
-        ::ContainerEnumName,
-        int,
-        class Player&,
-        ::BlockActorType,
-        class BlockPos const&,
-        ::ContainerCategory
+        ::ContainerEnumName   containerName,
+        int                   containerSize,
+        class Player&         player,
+        ::BlockActorType      type,
+        class BlockPos const& blockPos,
+        ::ContainerCategory   category
     );
 
     // symbol: ?getContainerHelper@LevelContainerModel@@SAPEAVContainer@@AEAVPlayer@@AEBUActorUniqueID@@@Z
-    MCAPI static class Container* getContainerHelper(class Player&, struct ActorUniqueID const&);
+    MCAPI static class Container* getContainerHelper(class Player& player, struct ActorUniqueID const& actorUniqueId);
 
     // symbol: ?getContainerHelper@LevelContainerModel@@SAPEAVContainer@@AEAVPlayer@@W4BlockActorType@@AEBVBlockPos@@@Z
-    MCAPI static class Container* getContainerHelper(class Player&, ::BlockActorType, class BlockPos const&);
+    MCAPI static class Container*
+    getContainerHelper(class Player& player, ::BlockActorType blockActorType, class BlockPos const& blockPos);
 
     // NOLINTEND
 

@@ -6,13 +6,15 @@
 #include <vector>
 
 #include "ll/api/base/Macro.h"
-
-/////////////////////// LL Configs ///////////////////////
+#include "ll/api/reflection/Dispatcher.h"
+#include "ll/core/tweak/SimpleServerLogger.h"
+#include "ll/core/tweak/bugfix/ArrayTagBugFix.h"
 
 namespace ll {
 
 struct LeviConfig {
-    int version = 5;
+
+    int version = 9;
 
     std::string language = "system";
     struct {
@@ -20,32 +22,17 @@ struct LeviConfig {
         int  logLevel = 4;
     } logger{};
 
-    struct ExtraMainPluginSettings {
-        bool enabled      = true;
-        bool alwaysLaunch = false;
-    };
-    ExtraMainPluginSettings scriptEngine{};
-    ExtraMainPluginSettings economyCore{};
-
     struct {
         struct {
             bool        enabled    = true;
-            std::string path       = R"(.\plugins\LeviLamina\CrashLogger.exe)";
             std::string logPath    = R"(.\logs\crash)";
             std::string dumpPrefix = "minidump_";
             std::string logPrefix  = "trace_";
         } crashLogger{};
 
         struct {
-            bool                     enabled         = true;
-            std::vector<std::string> autoInstallPath = {R"(.\plugins\AddonsHelper\)"};
-            std::string              tempPath        = {R"(.\plugins\AddonsHelper\Temp\)"};
-            std::set<std::string>    extension       = {".mcpack", ".mcaddon", ".zip"};
-        } addonsHelper{};
-
-        struct {
             struct {
-                bool fixArrayTagCompareBug = true;
+                reflection::Dispatcher<bool, ArrayTagBugFix> fixArrayTagCompareBug = true;
             } bugfixes{};
 
             bool tpdimCommand             = true;
@@ -56,11 +43,10 @@ struct LeviConfig {
         bool checkRunningBDS = true;
 
         struct {
-            bool enabled          = false;
-            bool playerCommand    = true;
-            bool playerPermission = true;
-            bool playerChat       = true;
-        } simpleServerLogger{};
+            bool alwaysLaunch = false;
+        } playerInfo{};
+
+        reflection::Dispatcher<SimpleServerLoggerConfig, SimpleServerLogger> simpleServerLogger{};
 
         std::unordered_map<std::string, std::string> resourcePackEncryptionMap = {
             {"<UUID>", "<KEY>"}

@@ -8,42 +8,60 @@
 #include "mc/server/commands/CommandContext.h"
 #include "mc/server/commands/MinecraftCommands.h"
 
-namespace ll::event::command {
-class ExecutingCommandEvent : public Cancellable<Event> {
-public:
-    MinecraftCommands& minecraftCommands;
-    CommandContext&    commandContext;
-    bool&              suppressOutput;
+namespace ll::event::inline command {
 
+class ExecuteCommandEvent : public Event {
+    MinecraftCommands& mMinecraftCommands;
+
+protected:
+    CommandContext& mCommandContext;
+    bool&           mSuppressOutput;
+
+    constexpr explicit ExecuteCommandEvent(
+        MinecraftCommands& minecraftCommands,
+        CommandContext&    commandContext,
+        bool&              suppressOutput
+    )
+    : mMinecraftCommands(minecraftCommands),
+      mCommandContext(commandContext),
+      mSuppressOutput(suppressOutput) {}
+
+public:
+    LLAPI void serialize(CompoundTag&) const override;
+
+    LLNDAPI MinecraftCommands&    minecraftCommands() const;
+    LLNDAPI CommandContext const& commandContext() const;
+    LLNDAPI bool const&           suppressOutput() const;
+};
+class ExecutingCommandEvent : public Cancellable<ExecuteCommandEvent> {
+public:
     constexpr explicit ExecutingCommandEvent(
         MinecraftCommands& minecraftCommands,
         CommandContext&    commandContext,
         bool&              suppressOutput
     )
-    : minecraftCommands(minecraftCommands),
-      commandContext(commandContext),
-      suppressOutput(suppressOutput) {}
+    : Cancellable(minecraftCommands, commandContext, suppressOutput) {}
 
-    LLNDAPI static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&);
+    LLAPI void deserialize(CompoundTag const&) override;
+
+    LLNDAPI CommandContext& commandContext() const;
+    LLNDAPI bool&           suppressOutput() const;
 };
-class ExecutedCommandEvent : public Event {
-public:
-    MCRESULT&             result;
-    MinecraftCommands&    minecraftCommands;
-    CommandContext const& commandContext;
-    bool                  suppressOutput;
+class ExecutedCommandEvent : public ExecuteCommandEvent {
+    MCRESULT& mResult;
 
+public:
     constexpr explicit ExecutedCommandEvent(
         MCRESULT&          result,
         MinecraftCommands& minecraftCommands,
         CommandContext&    commandContext,
-        bool               suppressOutput
+        bool&              suppressOutput
     )
-    : result(result),
-      minecraftCommands(minecraftCommands),
-      commandContext(commandContext),
-      suppressOutput(suppressOutput) {}
+    : ExecuteCommandEvent(minecraftCommands, commandContext, suppressOutput),
+      mResult(result) {}
 
-    LLNDAPI static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&);
+    LLAPI void serialize(CompoundTag&) const override;
+
+    LLNDAPI MCRESULT& result() const;
 };
-} // namespace ll::event::command
+} // namespace ll::event::inline command

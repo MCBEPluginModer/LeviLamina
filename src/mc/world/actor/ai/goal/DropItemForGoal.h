@@ -35,16 +35,16 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@DropItemForGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 11, symbol: ?isValidTarget@DropItemForGoal@@UEAA_NAEAVBlockSource@@AEBVBlockPos@@@Z
-    virtual bool isValidTarget(class BlockSource&, class BlockPos const&);
+    virtual bool isValidTarget(class BlockSource& region, class BlockPos const& pos);
 
     // vIndex: 17, symbol: ?findTargetBlock@DropItemForGoal@@UEAA_NXZ
     virtual bool findTargetBlock();
 
     // symbol: ??0DropItemForGoal@@QEAA@AEAVMob@@@Z
-    MCAPI explicit DropItemForGoal(class Mob&);
+    MCAPI explicit DropItemForGoal(class Mob& mob);
 
     // NOLINTEND
 

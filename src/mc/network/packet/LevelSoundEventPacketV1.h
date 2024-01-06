@@ -12,12 +12,12 @@
 
 class LevelSoundEventPacketV1 : public ::Packet {
 public:
-    LevelSoundEvent mEventId;    // this+0x30
-    Vec3            mPos;        // this+0x34
-    int             mData;       // this+0x40
-    ActorType       mEntityType; // this+0x44
-    bool            mIsBabyMob;  // this+0x48
-    bool            mIsGlobal;   // this+0x49
+    Puv::Legacy::LevelSoundEvent mEventId;    // this+0x30
+    Vec3                         mPos;        // this+0x34
+    int                          mData;       // this+0x40
+    ActorType                    mEntityType; // this+0x44
+    bool                         mIsBabyMob;  // this+0x48
+    bool                         mIsGlobal;   // this+0x49
 
     // prevent constructor by default
     LevelSoundEventPacketV1& operator=(LevelSoundEventPacketV1 const&);
@@ -36,11 +36,11 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@LevelSoundEventPacketV1@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@LevelSoundEventPacketV1@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0LevelSoundEventPacketV1@@QEAA@XZ
     MCAPI LevelSoundEventPacketV1();

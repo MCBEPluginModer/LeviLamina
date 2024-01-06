@@ -31,6 +31,9 @@ public:
     // symbol: ?UpcomingCreatorFeatures@Experiments@@QEBA_NXZ
     MCAPI bool UpcomingCreatorFeatures() const;
 
+    // symbol: ?UpdateAnnouncedLive2023@Experiments@@QEBA_NXZ
+    MCAPI bool UpdateAnnouncedLive2023() const;
+
     // symbol: ?VillagerTradesRebalance@Experiments@@QEBA_NXZ
     MCAPI bool VillagerTradesRebalance() const;
 
@@ -43,7 +46,7 @@ public:
     MCAPI std::vector<std::string> getExperimentsActiveForTelemetry() const;
 
     // symbol: ?getTagData@Experiments@@QEAAXAEBVCompoundTag@@@Z
-    MCAPI void getTagData(class CompoundTag const&);
+    MCAPI void getTagData(class CompoundTag const& tag);
 
     // symbol: ?isExperimentEnabled@Experiments@@QEBA_NW4AllExperiments@@@Z
     MCAPI bool isExperimentEnabled(::AllExperiments) const;
@@ -52,10 +55,10 @@ public:
     MCAPI void setExperimentByToggleIndex(uint64, bool);
 
     // symbol: ?setExperimentEnabled@Experiments@@QEAAXW4AllExperiments@@_N@Z
-    MCAPI void setExperimentEnabled(::AllExperiments, bool);
+    MCAPI void setExperimentEnabled(::AllExperiments, bool value);
 
     // symbol: ?setTagData@Experiments@@QEBAXAEAVCompoundTag@@@Z
-    MCAPI void setTagData(class CompoundTag&) const;
+    MCAPI void setTagData(class CompoundTag& tag) const;
 
     // symbol: ??1Experiments@@QEAA@XZ
     MCAPI ~Experiments();

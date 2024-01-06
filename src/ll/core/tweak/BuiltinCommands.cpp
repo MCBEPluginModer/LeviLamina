@@ -1,7 +1,8 @@
-﻿#include "ll/api/ServerInfo.h"
+﻿#include "ll/api/Logger.h"
+#include "ll/api/ServerInfo.h"
 #include "ll/api/event/EventBus.h"
-#include "ll/api/event/command/SetupCommandEvent.h"
-#include "ll/api/plugin/Plugin.h"
+#include "ll/api/event/world/ServerStartedEvent.h"
+#include "ll/api/service/Bedrock.h"
 #include "ll/core/Config.h"
 
 #include "mc/network/packet/Packet.h"
@@ -17,10 +18,10 @@
 #include "mc/world/level/dimension/VanillaDimensions.h"
 
 using namespace ll;
-using namespace ll::utils::string_utils;
+using namespace ll::string_utils;
 using namespace ll::i18n_literals;
 
-using ll::plugin::PluginManager;
+// using ll::plugin::PluginManager;
 
 namespace {
 class TeleportDimensionCommand : public Command {
@@ -60,7 +61,7 @@ class TeleportDimensionCommand : public Command {
         auto dim = VanillaDimensions::toString((int)DimensionId);
         auto pos = getTargetPos(ori, actor);
         actor->teleport(pos, (int)DimensionId);
-        output.success("ll.cmd.tpdim.success"_tr, actor->getNameTag(), dim, pos.x, pos.y, pos.z);
+        output.success("ll.cmd.tpdim.success"_tr(actor->getNameTag(), dim, pos.x, pos.y, pos.z));
         return true;
     }
 
@@ -93,7 +94,7 @@ class TeleportDimensionCommand : public Command {
 public:
     void execute(CommandOrigin const& ori, CommandOutput& output) const override {
         if ((int)DimensionId < 0 || (int)DimensionId > 2) {
-            output.error("ll.cmd.tpdim.invalidDimid"_tr, (int)DimensionId);
+            output.error("ll.cmd.tpdim.invalidDimid"_tr((int)DimensionId));
             return;
         }
         if (Victim_isSet) {
@@ -146,10 +147,10 @@ public:
         registry.registerOverload<TeleportDimensionCommand>("tpdim", dimensionIdParam, positionParam);
     }
 };
-
+/*
 void LLListPluginsCommand(CommandOutput& output) {
     auto plugins = PluginManager::getInstance().getAllPlugins();
-    output.success("ll.cmd.listPlugin.overview"_tr, plugins.size());
+    output.success("ll.cmd.listPlugin.overview"_tr(plugins.size()));
 
     std::ostringstream oss;
     for (auto& ptr : plugins) {
@@ -180,7 +181,7 @@ void LLPluginInfoCommand(CommandOutput& output, std::string const& pluginName) {
         std::map<std::string, std::string> outs;
         std::ostringstream                 oss;
 
-        output.success("ll.cmd.pluginInfo.title"_tr, pluginName);
+        output.success("ll.cmd.pluginInfo.title"_tr(pluginName));
 
         outs.emplace("Name", fmt::format("{}", plugin->getManifest().name));
         outs.emplace("Description", plugin->getManifest().description.value_or(""));
@@ -202,17 +203,16 @@ void LLPluginInfoCommand(CommandOutput& output, std::string const& pluginName) {
         }
         output.success(text, {});
     } else {
-        output.error("ll.cmd.pluginInfo.error.pluginNotFound"_tr, pluginName);
+        output.error("ll.cmd.pluginInfo.error.pluginNotFound"_tr(pluginName));
     }
 }
-
+*/
 void LLVersionCommand(CommandOutput& output) {
-    output.success(
-        "ll.cmd.version.msg"_tr,
+    output.success("ll.cmd.version.msg"_tr(
         ll::getBdsVersion().to_string(),
         ll::getLoaderVersion().to_string(),
         ll::getServerProtocolVersion()
-    );
+    ));
 }
 
 void LLHelpCommand(CommandOutput& output) { output.success("ll.cmd.help.msg"_tr); }
@@ -220,32 +220,32 @@ void LLHelpCommand(CommandOutput& output) { output.success("ll.cmd.help.msg"_tr)
 // void LLLoadPluginCommand(CommandOutput& output, std::string const& path) {
 
 // if (manager::loadPlugin(path, true)) {
-//     output.success("ll.cmd.loadPlugin.success"_tr, path);
+//     output.success("ll.cmd.loadPlugin.success"_tr(path));
 // } else {
-//     output.error("ll.cmd.loadPlugin.fail"_tr, path);
+//     output.error("ll.cmd.loadPlugin.fail"_tr(path));
 // }
 // }
 
 // void LLUnloadPluginCommand(CommandOutput& output, std::string const& pluginName) {
 
 // if (manager::unloadPlugin(pluginName, true)) {
-//     output.success("ll.cmd.unloadPlugin.success"_tr, pluginName);
+//     output.success("ll.cmd.unloadPlugin.success"_tr(pluginName));
 // } else {
-//     output.error("ll.cmd.unloadPlugin.fail"_tr, pluginName);
+//     output.error("ll.cmd.unloadPlugin.fail"_tr(pluginName));
 // }
 // }
 
 // void LLReloadPluginCommand(CommandOutput& output, std::string const& pluginName, bool reloadAll) {
 //     if (!reloadAll) {
 // if (manager::reloadPlugin(pluginName, true)) {
-//     output.success("ll.cmd.reloadPlugin.success"_tr, pluginName);
+//     output.success("ll.cmd.reloadPlugin.success"_tr(pluginName));
 // } else {
-//     output.error("ll.cmd.reloadPlugin.fail"_tr, pluginName);
+//     output.error("ll.cmd.reloadPlugin.fail"_tr(pluginName));
 // }
 // } else {
 // int cnt = manager::reloadAllPlugins(true);
 // if (cnt > 0) {
-//     output.success("ll.cmd.reloadAllPlugins.success"_tr, cnt);
+//     output.success("ll.cmd.reloadAllPlugins.success"_tr(cnt));
 // } else {
 //     output.error("ll.cmd.reloadAllPlugins.fail"_tr);
 // }
@@ -267,7 +267,7 @@ void LLSettingsCommand(
             ll::to_json(j, ll::globalConfig);
             auto path = nlohmann::json::json_pointer(key);
             auto val  = j[path];
-            output.success("ll.cmd.settings.get.success"_tr, key);
+            output.success("ll.cmd.settings.get.success"_tr(key));
             output.success(val.dump(4));
             break;
         }
@@ -277,7 +277,7 @@ void LLSettingsCommand(
             auto path = nlohmann::json::json_pointer(key);
             j[path]   = nlohmann::json::parse(value);
             ll::from_json(j, ll::globalConfig);
-            output.success("ll.cmd.settings.set.success"_tr, key, j[path].dump());
+            output.success("ll.cmd.settings.set.success"_tr(key, j[path].dump()));
             break;
         }
         case LLSettingsOperation::Delete: {
@@ -290,7 +290,7 @@ void LLSettingsCommand(
             auto path = nlohmann::json::json_pointer(key);
             j.erase(path.to_string());
             ll::from_json(j, ll::globalConfig);
-            output.success("ll.cmd.settings.delete.success"_tr, key);
+            output.success("ll.cmd.settings.delete.success"_tr(key));
             break;
         }
         case LLSettingsOperation::List: {
@@ -343,8 +343,8 @@ public:
             LLVersionCommand(output);
             break;
         case Operation::List:
-            if (!hasPluginNameSet) LLListPluginsCommand(output);
-            else LLPluginInfoCommand(output, pluginName);
+            // if (!hasPluginNameSet) LLListPluginsCommand(output);
+            // else LLPluginInfoCommand(output, pluginName);
             break;
         // case Operation::Load:
         //     if (hasPluginNameSet) LLLoadPluginCommand(output, pluginName);
@@ -382,11 +382,11 @@ public:
         registry.registerCommand("ll", "LeviLamina plugin operations", CommandPermissionLevel::Host);
 
         // Register softenum
-        std::vector<std::string> pluginList;
-        for (auto& p : PluginManager::getInstance().getAllPlugins()) {
-            if (auto plugin = p.lock()) pluginList.push_back(plugin->getManifest().name);
-        }
-        registry.addSoftEnum("PluginName", pluginList);
+        // std::vector<std::string> pluginList;
+        // for (auto& p : PluginManager::getInstance().getAllPlugins()) {
+        //     if (auto plugin = p.lock()) pluginList.push_back(plugin->getManifest().name);
+        // }
+        // registry.addSoftEnum("PluginName", pluginList);
 
         // ll version & help
         registry.addEnum<Operation>(
@@ -518,12 +518,7 @@ public:
 class VersionCommand : public Command {
 
 public:
-    void execute(CommandOrigin const&, CommandOutput& output) const override {
-#ifdef LL_DEBUG
-        Logger("CommandOrigin").warn(ori.serialize().toSnbt());
-#endif // LL_DEBUG
-        LLVersionCommand(output);
-    }
+    void execute(CommandOrigin const&, CommandOutput& output) const override { LLVersionCommand(output); }
 
     static void setup(CommandRegistry& registry) {
         registry.registerCommand("version", "Get the version of this server", CommandPermissionLevel::GameDirectors);
@@ -534,13 +529,14 @@ public:
 namespace ll {
 void registerLeviCommands() {
     using namespace event;
-    EventBus::getInstance().emplaceListener<command::SetupCommandEvent>([](command::SetupCommandEvent& ev) {
+    EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
+        auto registry = service::getCommandRegistry();
         if (globalConfig.modules.tweak.tpdimCommand) {
-            TeleportDimensionCommand::setup(ev.commandRegistry);
+            TeleportDimensionCommand::setup(registry);
         }
         if (globalConfig.modules.tweak.settingsCommand) {
-            VersionCommand::setup(ev.commandRegistry);
-            LLCommand::setup(ev.commandRegistry);
+            VersionCommand::setup(registry);
+            LLCommand::setup(registry);
         }
     });
 }

@@ -59,17 +59,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@AddPlayerPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
-    // ?_read@AddPlayerPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    // ?_read@AddPlayerPacket@@MEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0AddPlayerPacket@@QEAA@XZ
     MCAPI AddPlayerPacket();
 
     // symbol: ??0AddPlayerPacket@@QEAA@AEAVPlayer@@@Z
-    MCAPI explicit AddPlayerPacket(class Player&);
+    MCAPI explicit AddPlayerPacket(class Player& p);
 
     // NOLINTEND
 };

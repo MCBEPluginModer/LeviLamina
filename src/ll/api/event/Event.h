@@ -7,6 +7,8 @@
 #include "ll/api/event/EventId.h"
 #include "ll/api/event/ListenerBase.h"
 
+class CompoundTag;
+
 namespace ll::event {
 class Event;
 template <std::derived_from<Event> T>
@@ -19,14 +21,18 @@ private:
 
     bool mCancelled{false};
 
+    LLAPI void serializeWithCancel(CompoundTag&) const;
+    LLAPI void deserializeWithCancel(CompoundTag const&);
+
 protected:
     constexpr Event() = default;
 
 public:
     virtual ~Event() = default;
 
-    static constexpr ll::event::EventId CustomEventId{EmptyEventId};
+    LLAPI virtual void serialize(CompoundTag&) const;
+    LLAPI virtual void deserialize(CompoundTag const&);
 
-    static constexpr std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&) { return nullptr; }
+    static constexpr ll::event::EventId CustomEventId{EmptyEventId};
 };
 } // namespace ll::event

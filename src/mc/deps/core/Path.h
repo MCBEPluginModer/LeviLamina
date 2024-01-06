@@ -27,7 +27,7 @@ public:
     MCAPI ~Path();
 
     // symbol: ?makeFailure@Path@Core@@SA?AVResult@2@PEBD$$QEAV12@@Z
-    MCAPI static class Core::Result makeFailure(char const*, class Core::Path&&);
+    MCAPI static class Core::Result makeFailure(char const* format, class Core::Path&& path);
 
     // symbol: ?EMPTY@Path@Core@@2V12@B
     MCAPI static class Core::Path const EMPTY;

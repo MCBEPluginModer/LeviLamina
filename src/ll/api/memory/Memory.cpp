@@ -1,65 +1,81 @@
 #include "ll/api/memory/Memory.h"
 
-#include <ranges>
+#include <optional>
 #include <vector>
 
 #include "pl/SymbolProvider.h"
 
+#include "ll/api/Logger.h"
+#include "ll/api/ServerInfo.h"
+#include "ll/api/thread/GlobalThreadPauser.h"
 #include "ll/api/utils/StringUtils.h"
 #include "ll/api/utils/WinUtils.h"
 
-#include "windows.h"
-
-using namespace ll::utils;
+#include "memoryapi.h"
 
 namespace ll::memory {
 
-FuncPtr resolveSymbol(char const* symbol) { return pl::symbol_provider::pl_resolve_symbol(symbol); }
+FuncPtr resolveSymbol(char const* symbol) {
+    static Logger sLogger("LeviLamina", true);
+    auto          res = pl::symbol_provider::pl_resolve_symbol_silent(symbol);
+    if (res == nullptr) {
+        sLogger.fatal("Could not find symbol in memory: {}", symbol);
+        sLogger.fatal("In module: {}", win_utils::getCallerModuleFileName());
+    }
+    return res;
+}
 
-FuncPtr resolveSignature(char const* signature) {
-    std::string_view pattern = signature;
-    void*            match   = nullptr;
+FuncPtr resolveSymbol(std::string_view symbol, bool disableErrorOutput) {
+    if (disableErrorOutput) {
+        return pl::symbol_provider::pl_resolve_symbol_silent(symbol.data());
+    } else {
+        return resolveSymbol(symbol.data());
+    }
+}
 
-    static auto span = win_utils::getImageRange("");
+FuncPtr resolveSignature(std::string_view signature) {
+    static auto      bdsSpan = win_utils::getImageRange();
+    std::span<uchar> span;
 
-    for (auto& c : span) {
-        while (pattern.starts_with(' ')) pattern.remove_prefix(1);
-        if (pattern.empty()) return match;
-        if (!match) match = &c;
-        if (pattern.starts_with('?')) {
-            pattern.remove_prefix(1);
-        } else if (pattern.size() >= 2 && c == string_utils::svtouc(pattern.substr(0, 2), nullptr, 16)) {
-            pattern.remove_prefix(2);
+    if (auto pos = signature.find('!'); pos != std::string_view::npos) {
+        span      = win_utils::getImageRange(signature.substr(0, pos));
+        signature = signature.substr(1 + pos);
+    } else {
+        span = bdsSpan;
+    }
+    if (span.empty()) {
+        return nullptr;
+    }
+    std::vector<std::optional<uchar>> pattern;
+    for (size_t i = 0; i < signature.size(); ++i) {
+        auto& c = signature[i];
+        if (c == ' ') {
+            continue;
+        } else if (c == '?') {
+            pattern.emplace_back(std::nullopt);
+        } else if (isxdigit(c) && (++i < signature.size() && isxdigit(signature[i]))) {
+            pattern.emplace_back(string_utils::svtouc(signature.substr(i - 1, 2), nullptr, 16));
         } else {
-            pattern = signature;
-            match   = nullptr;
+            return nullptr;
         }
     }
-    // std::vector<std::optional<uchar>> pattern;
-    // for (;;) {
-    //     while (signature.starts_with(' ')) signature.remove_prefix(1);
-    //     if (signature.empty()) break;
-    //     if (signature.starts_with('?')) {
-    //         pattern.emplace_back(std::nullopt);
-    //         signature.remove_prefix(1);
-    //     } else {
-    //         pattern.emplace_back(string_utils::svtouc(signature.substr(0, 2), nullptr, 16));
-    //         signature.remove_prefix(2);
-    //     }
-    // }
-    // if (pattern.empty()) { return nullptr; }
-    // for (size_t i = 0; i < span.size() - pattern.size(); ++i) {
-    //     bool   match = true;
-    //     size_t iter  = 0;
-    //     for (auto& c : pattern) {
-    //         if (c && span[i + iter] != *c) {
-    //             match = false;
-    //             break;
-    //         }
-    //         iter++;
-    //     }
-    //     if (match) { return &span[i]; }
-    // }
+    if (pattern.empty()) {
+        return nullptr;
+    }
+    for (size_t i = 0; i < span.size() - pattern.size(); ++i) {
+        bool   match = true;
+        size_t iter  = 0;
+        for (auto& c : pattern) {
+            if (span[i + iter] != c) {
+                match = false;
+                break;
+            }
+            iter++;
+        }
+        if (match) {
+            return &span[i];
+        }
+    }
     return nullptr;
 }
 
@@ -75,20 +91,14 @@ std::vector<std::string> lookupSymbol(FuncPtr func) {
 }
 
 void modify(void* ptr, size_t len, const std::function<void()>& callback) {
+    std::unique_ptr<thread::GlobalThreadPauser> pauser;
+    if (getServerStatus() != ServerStatus::Default) {
+        pauser = std::make_unique<thread::GlobalThreadPauser>();
+    }
     DWORD oldProtect;
     VirtualProtect(ptr, len, PAGE_EXECUTE_READWRITE, &oldProtect);
     callback();
     VirtualProtect(ptr, len, oldProtect, &oldProtect);
-}
-
-Handle getModuleHandle(void* addr) {
-    HMODULE hModule = nullptr;
-    GetModuleHandleEx(
-        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-        reinterpret_cast<LPCTSTR>(addr),
-        &hModule
-    );
-    return hModule;
 }
 
 } // namespace ll::memory

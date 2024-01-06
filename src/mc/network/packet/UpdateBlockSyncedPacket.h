@@ -29,17 +29,23 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@UpdateBlockSyncedPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@UpdateBlockSyncedPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0UpdateBlockSyncedPacket@@QEAA@XZ
     MCAPI UpdateBlockSyncedPacket();
 
     // symbol: ??0UpdateBlockSyncedPacket@@QEAA@AEBVBlockPos@@IIEAEBUActorBlockSyncMessage@@@Z
-    MCAPI UpdateBlockSyncedPacket(class BlockPos const&, uint, uint, uchar, struct ActorBlockSyncMessage const&);
+    MCAPI UpdateBlockSyncedPacket(
+        class BlockPos const&               pos,
+        uint                                layer,
+        uint                                runtimeId,
+        uchar                               updateFlags,
+        struct ActorBlockSyncMessage const& syncMsg
+    );
 
     // NOLINTEND
 };

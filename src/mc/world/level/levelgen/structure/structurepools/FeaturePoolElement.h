@@ -20,22 +20,22 @@ public:
 public:
     // NOLINTBEGIN
     // vIndex: 0, symbol: ?getSize@FeaturePoolElement@@UEBA?AVBlockPos@@W4Rotation@@@Z
-    virtual class BlockPos getSize(::Rotation) const;
+    virtual class BlockPos getSize(::Rotation rotation) const;
 
     // vIndex: 2, symbol:
     // ?getJigsawMarkers@FeaturePoolElement@@UEBA?AV?$vector@VJigsawBlockInfo@@V?$allocator@VJigsawBlockInfo@@@std@@@std@@VBlockPos@@AEAVLegacyStructureSettings@@PEAVBlockSource@@@Z
     virtual std::vector<class JigsawBlockInfo>
-    getJigsawMarkers(class BlockPos, class LegacyStructureSettings&, class BlockSource*) const;
+    getJigsawMarkers(class BlockPos position, class LegacyStructureSettings& settings, class BlockSource* region) const;
 
     // vIndex: 7, symbol:
     // ?place@FeaturePoolElement@@UEBA_NAEAVBlockSource@@VBlockPos@@W4Rotation@@VBoundingBox@@AEAVRandom@@AEAV?$unordered_map@VBlockPos@@V?$optional@UActorDefinitionIdentifier@@@std@@U?$hash@VBlockPos@@@3@U?$equal_to@VBlockPos@@@3@V?$allocator@U?$pair@$$CBVBlockPos@@V?$optional@UActorDefinitionIdentifier@@@std@@@std@@@3@@std@@1@Z
     virtual bool place(
-        class BlockSource&,
-        class BlockPos,
-        ::Rotation,
-        class BoundingBox,
-        class Random&,
-        std::unordered_map<class BlockPos, std::optional<struct ActorDefinitionIdentifier>>&,
+        class BlockSource&                                                                   region,
+        class BlockPos                                                                       position,
+        ::Rotation                                                                           rotation,
+        class BoundingBox                                                                    chunkBB,
+        class Random&                                                                        random,
+        std::unordered_map<class BlockPos, std::optional<struct ActorDefinitionIdentifier>>& entitiesToPlace,
         class BlockPos
     ) const;
 
@@ -44,8 +44,10 @@ public:
 
     // symbol:
     // ??0FeaturePoolElement@@QEAA@V?$not_null@V?$NonOwnerPointer@VStructureManager@@@Bedrock@@@gsl@@V?$WeakRefT@UFeatureRefTraits@@@@@Z
-    MCAPI
-    FeaturePoolElement(Bedrock::NotNullNonOwnerPtr<class StructureManager>, class WeakRefT<struct FeatureRefTraits>);
+    MCAPI FeaturePoolElement(
+        Bedrock::NotNullNonOwnerPtr<class StructureManager> structureManager,
+        class WeakRefT<struct FeatureRefTraits>             feature
+    );
 
     // NOLINTEND
 };

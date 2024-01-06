@@ -3,6 +3,7 @@
 #include <string>
 
 #include "ll/api/i18n/I18nAPI.h"
+#include "ll/api/memory/Memory.h"
 #include "ll/api/utils/StringUtils.h"
 
 #include "ll/core/Config.h"
@@ -12,8 +13,8 @@
 
 #include "psapi.h"
 
-using namespace ll::utils::string_utils;
-namespace ll::utils::win_utils {
+using namespace ll::string_utils;
+namespace ll::inline utils::win_utils {
 
 std::string getSystemLocaleName() {
     wchar_t buf[LOCALE_NAME_MAX_LENGTH]{};
@@ -34,7 +35,7 @@ bool isWine() {
     return result;
 }
 
-std::span<uchar> getImageRange(std::string const& name) {
+std::span<uchar> getImageRange(std::string_view name) {
     static auto process = GetCurrentProcess();
     HMODULE     rangeStart;
     if (name.empty()) {
@@ -43,12 +44,40 @@ std::span<uchar> getImageRange(std::string const& name) {
         rangeStart = GetModuleHandle(str2wstr(name).c_str());
     }
     if (rangeStart) {
-        MODULEINFO miModInfo;
-        if (GetModuleInformation(process, rangeStart, &miModInfo, sizeof(MODULEINFO))) {
-            return {(uchar*)rangeStart, miModInfo.SizeOfImage};
+        MODULEINFO moduleInfo;
+        if (GetModuleInformation(process, rangeStart, &moduleInfo, sizeof(MODULEINFO))) {
+            return {(uchar*)rangeStart, moduleInfo.SizeOfImage};
         }
     }
     return {};
 }
 
-} // namespace ll::utils::win_utils
+void* getModuleHandle(void* addr) {
+    HMODULE hModule = nullptr;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCTSTR>(addr),
+        &hModule
+    );
+    return hModule;
+}
+
+std::optional<std::filesystem::path> getModulePath(void* handle) {
+    std::wstring path(32767, '\0');
+    if (auto res = GetModuleFileName((HMODULE)handle, path.data(), 32767); res != 0 && res != 32767) {
+        path.resize(res);
+        return std::filesystem::path(path);
+    } else {
+        return std::nullopt;
+    }
+}
+
+std::string getModuleFileName(void* handle) {
+#if _HAS_CXX23
+    return getModulePath(handle).transform([](auto&& path) { return u8str2str(path.filename().u8string()); }
+    ).value_or("");
+#else
+    return {};
+#endif
+}
+} // namespace ll::inline utils::win_utils

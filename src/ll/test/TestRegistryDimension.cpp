@@ -1,5 +1,4 @@
-#ifdef LL_DEBUG
-
+/*
 #include "ll/api/Logger.h"
 #include "ll/api/memory/Hook.h"
 #include "mc/common/wrapper/OwnerPtrFactory.h"
@@ -45,14 +44,14 @@ void printVfable(void* t) {
 
     void** table = *(void***)t;
 #if _HAS_CXX23
-    logger.info("{}", ll::utils::stacktrace_utils::toString(*(std::stacktrace_entry*)&table));
+    logger.info("{}", ll::stacktrace_utils::toString(*(std::stacktrace_entry*)&table));
 #else
     logger.info("{}", (void*)table);
 #endif
     for (size_t i = 0; table[i] != nullptr; ++i) {
 #if _HAS_CXX23
         logger
-            .info("v table[{:02}] : {}", i, ll::utils::stacktrace_utils::toString(*(std::stacktrace_entry*)&table[i]));
+            .info("v table[{:02}] : {}", i, ll::stacktrace_utils::toString(*(std::stacktrace_entry*)&table[i]));
 #else
         logger.info("v table[{}] : {}", i, table[i]);
 #endif
@@ -127,7 +126,7 @@ public:
     }
 
     std::unique_ptr<ChunkSource>
-    _wrapStorageForVersionCompatibility(std::unique_ptr<ChunkSource> cs, ::StorageVersion /*ver*/) override {
+    _wrapStorageForVersionCompatibility(std::unique_ptr<ChunkSource> cs, ::StorageVersion) override {
         logger.debug("TestDimension::_wrapStorageForVersionCompatibility");
         return cs;
     }
@@ -206,9 +205,8 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 };
 
 // registry dimensoin when in ll, must reload Dimension::getWeakRef
-LL_AUTO_TYPED_INSTANCE_HOOK(RegistryDimensionTest1, HookPriority::Normal, Dimension, &Dimension::getWeakRef, WeakRefT<SharePtrRefTraits<Dimension>>) {
-    if (this->getDimensionId() == 0) return weak_from_this();
-    return origin();
+LL_AUTO_TYPED_INSTANCE_HOOK(RegistryDimensionTest1, HookPriority::Normal, Dimension, &Dimension::getWeakRef,
+WeakRefT<SharePtrRefTraits<Dimension>>) { if (this->getDimensionId() == 0) return weak_from_this(); return origin();
 }
 
-#endif // LL_DEBUG
+*/

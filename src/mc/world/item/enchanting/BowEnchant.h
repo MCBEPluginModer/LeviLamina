@@ -18,10 +18,10 @@ public:
     virtual ~BowEnchant() = default;
 
     // vIndex: 2, symbol: ?getMinCost@BowEnchant@@UEBAHH@Z
-    virtual int getMinCost(int) const;
+    virtual int getMinCost(int level) const;
 
     // vIndex: 3, symbol: ?getMaxCost@BowEnchant@@UEBAHH@Z
-    virtual int getMaxCost(int) const;
+    virtual int getMaxCost(int level) const;
 
     // vIndex: 4, symbol: __unk_vfn_4
     virtual void __unk_vfn_4();
@@ -42,7 +42,7 @@ public:
     virtual void __unk_vfn_13();
 
     // vIndex: 14, symbol: ?_isValidEnchantmentTypeForCategory@BowEnchant@@EEBA_NW4Type@Enchant@@@Z
-    virtual bool _isValidEnchantmentTypeForCategory(::Enchant::Type) const;
+    virtual bool _isValidEnchantmentTypeForCategory(::Enchant::Type type) const;
 
     // NOLINTEND
 

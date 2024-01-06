@@ -45,23 +45,28 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@MovePlayerPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 6, symbol: ?isValid@MovePlayerPacket@@UEBA_NXZ
     virtual bool isValid() const;
 
     // vIndex: 7, symbol:
     // ?_read@MovePlayerPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0MovePlayerPacket@@QEAA@XZ
     MCAPI MovePlayerPacket();
 
     // symbol: ??0MovePlayerPacket@@QEAA@AEBVPlayer@@AEBVVec3@@@Z
-    MCAPI MovePlayerPacket(class Player const&, class Vec3 const&);
+    MCAPI MovePlayerPacket(class Player const& player, class Vec3 const& pos);
 
     // symbol: ??0MovePlayerPacket@@QEAA@AEBVPlayer@@W4PositionMode@PlayerPositionModeComponent@@HH@Z
-    MCAPI MovePlayerPacket(class Player const&, ::PlayerPositionModeComponent::PositionMode, int, int);
+    MCAPI MovePlayerPacket(
+        class Player const&                         player,
+        ::PlayerPositionModeComponent::PositionMode resetPosition,
+        int                                         cause,
+        int                                         sourceEntityType
+    );
 
     // NOLINTEND
 };

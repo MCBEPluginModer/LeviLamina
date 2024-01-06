@@ -1,4 +1,5 @@
 #include "ll/api/memory/Hook.h"
+#include "mc/entity/gamerefs_entity/EntityRegistry.h"
 #include "mc/server/ServerInstance.h"
 #include "mc/world/events/ServerInstanceEventCoordinator.h"
 #include "mc/world/level/block/Block.h"
@@ -13,17 +14,55 @@
 
 #include "ll/api/memory/Closure.h"
 
+struct SystemCategory;
+
+#include "ll/api/service/Bedrock.h"
+#include "mc/entity/systems/EntitySystems.h"
+#include "mc/world/level/Level.h"
+
+
 auto test() {
-    auto exists = BlockTypeRegistry::lookupByName("minecraft:stone");
-    if (exists) {
-        std::cout << exists->getTypeName() << std::endl;
-    }
-    return exists;
+    // ll::logger.warn("mAllSystemsInfo");
+    // auto& systems = ll::service::getLevel()->getEntitySystems().getDefaultCollection();
+
+    // for (auto& info : systems.mAllSystemsInfo) {
+    //     ll::logger.warn("info {}", info.mName);
+    // }
+
+    // struct EntitySystems::EditorSystemCategory
+    // struct EntitySystems::GameSystemCategory
+    // struct EntitySystems::UsedInClientMovementCorrections
+    // struct EntitySystems::UsedInServerPlayerMovement
+    // struct VanillaSystemCategories::ActorMove
+    // struct VanillaSystemCategories::ExitVehicle
+    // struct VanillaSystemCategories::MobJumpFromGround
+    // struct VanillaSystemCategories::PositionPassenger
+    // struct VanillaSystemCategories::RemovePassenger
+    // struct VanillaSystemCategories::StopRiding
+    // struct VanillaSystemCategories::UpdateEntityInside
+    // struct VanillaSystemCategories::UpdateWaterState
+    // struct VanillaSystemCategories::UsedByClientAndServerAuth
+
+    // auto& vec = systems.mTickingSystemCategories;
+
+    // ll::logger.warn("info safe:{} ", ((char*)&*vec.end() - (char*)&*vec.begin()) / vec.size());
+    // for (auto& category :
+    //      systems.mTickingSystemCategories) {
+    //     ll::logger.warn("category :{} ", category.mCategory.value);
+    //     for (auto id : category.mSystems) {
+    //         ll::logger.warn("category sys:{} ", id);
+    //     }
+    //     ll::logger.warn("timing :{} ", category.mTimings.size());
+    //     for (auto timing : category.mTimings) {
+    //         ll::logger.warn("category sys:{} {}", timing.mMsTime,timing.mCount);
+    //     }
+    // }
+    // ll::logger.warn("mAllSystemsInfo size {} {}", systems.mAllSystemsInfo.size(), systems.mAllSystems.size());
 }
 
 LL_AUTO_TYPED_INSTANCE_HOOK(
     ServerStartedEventHook,
-    ll::memory::HookPriority::Normal,
+    ll::memory::HookPriority::Low,
     ServerInstanceEventCoordinator,
     &ServerInstanceEventCoordinator::sendServerThreadStarted,
     void,
@@ -74,7 +113,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
         ll::error_info::printCurrentException();
     }
 #if _HAS_CXX23
-    // static ll::utils::stacktrace_utils::SymbolLoader sl{};
+    static ll::stacktrace_utils::SymbolLoader sl{};
 #endif
     try {
         try {
@@ -85,7 +124,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
             } catch (...) {
 #if _HAS_CXX23
                 auto stack = ll::error_info::stacktraceFromCurrExc();
-                ll::logger.debug("\n{}", ll::utils::stacktrace_utils::toString(stack));
+                ll::logger.debug("\n{}", ll::stacktrace_utils::toString(stack));
 #endif
                 std::throw_with_nested(std::runtime_error("Couldn't open " + s));
             }
@@ -96,7 +135,7 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
         ll::error_info::printCurrentException();
 #if _HAS_CXX23
         auto stack = std::stacktrace::current();
-        ll::logger.debug("\n{}", ll::utils::stacktrace_utils::toString(stack));
+        ll::logger.debug("\n{}", ll::stacktrace_utils::toString(stack));
 #endif
     }
     // throw std::runtime_error("Test New Crash Logger");
@@ -107,9 +146,9 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 
     auto c2 = ll::memory::FunctionalClosure(f);
 
-    (*c1.get())(654367);
+    c1.get()(654367);
     f(6376774);
-    (*c2.get())(4619735);
+    c2.get()(4619735);
 
     // auto& map        = BlockTypeRegistry::$mBlockLookupMap();
     // map["test:test"] = BlockTypeRegistry::lookupByName("minecraft:stone");
@@ -118,7 +157,27 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 
     // std::clog << "hii  " << bool(ptr) << ' ' << ptr->getTypeName() << std::endl;
     // std::cout << "hii  " << bool(ptr) << ' ' << ptr->getTypeName() << std::endl;
+    ll::logger.warn(
+        "{}",
+        ll::memory::resolveIdentifier(
+            "`anonymous namespace'::DefaultEntitySystemsCollection::internalGatherSystemTimings"
+        )
+    );
+
     origin();
 }
 
 #pragma warning(pop)
+
+
+// LL_AUTO_TYPED_INSTANCE_HOOK(
+//     EStickHook,
+//     HookPriority::Normal,
+//     EntitySystems,
+//     &EntitySystems::tick,
+//     void,
+//     EntityRegistry& registry
+// ) {
+//     ll::logger.debug("tick {} {}", registry.mName, std::chrono::system_clock::now());
+//     origin(registry);
+// }

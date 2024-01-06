@@ -3,7 +3,7 @@
 #include "mc/_HeaderOutputPredefine.h"
 
 // auto generated inclusion list
-#include "mc/enums/EquipmentSlot.h"
+#include "mc/deps/puv/EquipmentSlot.h"
 #include "mc/world/item/components/ItemLockMode.h"
 
 class ItemContext {
@@ -15,14 +15,14 @@ public:
 
 public:
     // NOLINTBEGIN
-    // symbol: ??0ItemContext@@QEAA@AEBVWeakEntityRef@@W4EquipmentSlot@@@Z
-    MCAPI ItemContext(class WeakEntityRef const&, ::EquipmentSlot);
+    // symbol: ??0ItemContext@@QEAA@AEBVWeakEntityRef@@W4EquipmentSlot@Legacy@Puv@@@Z
+    MCAPI ItemContext(class WeakEntityRef const&, ::Puv::Legacy::EquipmentSlot);
 
     // symbol: ??0ItemContext@@QEAA@AEBVWeakEntityRef@@H@Z
-    MCAPI ItemContext(class WeakEntityRef const&, int);
+    MCAPI ItemContext(class WeakEntityRef const&, int slot);
 
     // symbol: ??0ItemContext@@QEAA@AEAVBlockSource@@AEBVBlockPos@@H@Z
-    MCAPI ItemContext(class BlockSource&, class BlockPos const&, int);
+    MCAPI ItemContext(class BlockSource& region, class BlockPos const&, int slot);
 
     // symbol: ?getAmount@ItemContext@@QEBA?AV?$optional@H@std@@XZ
     MCAPI std::optional<int> getAmount() const;
@@ -55,19 +55,19 @@ public:
     MCAPI std::optional<std::vector<struct ItemTag>> getTags() const;
 
     // symbol: ?hasTag@ItemContext@@QEBA?AV?$optional@_N@std@@AEBUItemTag@@@Z
-    MCAPI std::optional<bool> hasTag(struct ItemTag const&) const;
+    MCAPI std::optional<bool> hasTag(struct ItemTag const& tag) const;
 
     // symbol: ?isStackable@ItemContext@@QEBA?AV?$optional@_N@std@@XZ
     MCAPI std::optional<bool> isStackable() const;
 
     // symbol: ?isStackableWith@ItemContext@@QEBA?AV?$optional@_N@std@@AEBVItemStackBase@@@Z
-    MCAPI std::optional<bool> isStackableWith(class ItemStackBase const&) const;
+    MCAPI std::optional<bool> isStackableWith(class ItemStackBase const& other) const;
 
     // symbol: ?isValid@ItemContext@@QEBA_NXZ
     MCAPI bool isValid() const;
 
     // symbol: ?setAmount@ItemContext@@QEAA_NH@Z
-    MCAPI bool setAmount(int);
+    MCAPI bool setAmount(int amount);
 
     // symbol:
     // ?setCanDestroy@ItemContext@@QEAA?AV?$optional@_N@std@@AEBV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@3@@Z
@@ -78,10 +78,10 @@ public:
     MCAPI std::optional<bool> setCanPlaceOn(std::vector<std::string> const&);
 
     // symbol: ?setItem@ItemContext@@QEAA_NAEBVItemStack@@@Z
-    MCAPI bool setItem(class ItemStack const&);
+    MCAPI bool setItem(class ItemStack const& stack);
 
     // symbol: ?setKeepOnDeath@ItemContext@@QEAA_N_N@Z
-    MCAPI bool setKeepOnDeath(bool);
+    MCAPI bool setKeepOnDeath(bool value);
 
     // symbol: ?setLockMode@ItemContext@@QEAA_NW4ItemLockMode@@@Z
     MCAPI bool setLockMode(::ItemLockMode);
@@ -97,8 +97,8 @@ public:
     // symbol: ??1ItemContext@@QEAA@XZ
     MCAPI ~ItemContext();
 
-    // symbol: ?setEquipment@ItemContext@@SA_NAEBVItemStack@@W4EquipmentSlot@@AEAVMob@@@Z
-    MCAPI static bool setEquipment(class ItemStack const&, ::EquipmentSlot, class Mob&);
+    // symbol: ?setEquipment@ItemContext@@SA_NAEBVItemStack@@W4EquipmentSlot@Legacy@Puv@@AEAVMob@@@Z
+    MCAPI static bool setEquipment(class ItemStack const& itemStack, ::Puv::Legacy::EquipmentSlot, class Mob& mob);
 
     // NOLINTEND
 
@@ -108,7 +108,7 @@ public:
     MCAPI class ItemStack const& _getItem() const;
 
     // symbol: ?_setItem@ItemContext@@AEAAXAEBVItemStack@@@Z
-    MCAPI void _setItem(class ItemStack const&);
+    MCAPI void _setItem(class ItemStack const& itemStack);
 
     // symbol: ?_tryGetChestContainer@ItemContext@@AEBAPEAVContainer@@XZ
     MCAPI class Container* _tryGetChestContainer() const;

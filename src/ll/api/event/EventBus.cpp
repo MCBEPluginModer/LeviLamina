@@ -9,9 +9,11 @@
 #include "ll/api/base/ErrorInfo.h"
 #include "ll/api/event/EmitterBase.h"
 #include "ll/api/thread/SharedRecursiveMutex.h"
+#include "ll/core/LeviLamina.h"
 
 namespace ll::event {
-static Logger eventBusLogger("EventBus");
+
+std::atomic_ullong ListenerBase::listenerId{0};
 
 class CallbackStream {
     struct ListenerComparator {
@@ -19,6 +21,7 @@ class CallbackStream {
     };
 
     std::set<ListenerPtr, ListenerComparator> listeners;
+    ll::thread::SharedRecursiveMutex          mutex;
 
 public:
     std::unique_ptr<EmitterBase> emitter;
@@ -26,47 +29,75 @@ public:
     [[nodiscard]] size_t count() const { return listeners.size(); }
 
     void publish(Event& event) {
+        std::shared_lock lock(mutex);
         for (auto& l : listeners) {
             try {
                 l->call(event);
             } catch (...) {
-                auto lock = ll::Logger::lock();
+                auto llock = ll::Logger::lock();
                 try {
-                    auto& weak = l->pluginPtr;
-                    eventBusLogger.error("Error in [{}:{}] of <{}>:",
-                                         ll::reflection::removeTypePrefix(typeid(*l).name()),
-                                         l->getId(),
-                                         weak.expired() ? "unknown plugin" : weak.lock()->getManifest().name);
+                    logger.error(
+                        "Error in [{}:{}] of <{}>:",
+                        ll::reflection::removeTypePrefix(ll::reflection::getDynamicRawName(*l)),
+                        l->getId(),
+                        l->pluginPtr.expired() ? "unknown plugin" : l->pluginPtr.lock()->getManifest().name
+                    );
                 } catch (...) {}
-                error_info::printCurrentException(eventBusLogger);
+                error_info::printCurrentException();
             }
         }
     }
-    bool addListener(ListenerPtr const& listener) { return listeners.insert(listener).second; }
+    void publish(std::string_view pluginName, Event& event) {
+        std::shared_lock lock(mutex);
+        for (auto& l : listeners) {
+            auto ptr = l->pluginPtr.lock();
+            if (!ptr || ptr->getManifest().name != pluginName) {
+                continue;
+            }
+            try {
+                l->call(event);
+            } catch (...) {
+                auto llock = ll::Logger::lock();
+                try {
+                    logger.error(
+                        "Error in [{}:{}] of <{}>:",
+                        ll::reflection::removeTypePrefix(ll::reflection::getDynamicRawName(*l)),
+                        l->getId(),
+                        pluginName
+                    );
+                } catch (...) {}
+                error_info::printCurrentException();
+            }
+        }
+    }
+    bool addListener(ListenerPtr const& listener) {
+        std::shared_lock lock(mutex);
+        return listeners.insert(listener).second;
+    }
 
-    bool removeListener(ListenerPtr const& listener) { return listeners.erase(listener); }
+    bool removeListener(ListenerPtr const& listener) {
+        std::lock_guard lock(mutex);
+        return listeners.erase(listener);
+    }
 
     [[nodiscard]] bool empty() const { return listeners.empty(); }
 };
 
 class EventBus::EventBusImpl {
-    std::atomic<ListenerId> lid{};
-
 public:
     std::unordered_map<EventId, std::function<std::unique_ptr<EmitterBase>(ListenerBase&)>> emitterFactory;
 
     std::unordered_map<EventId, CallbackStream> streams;
 
-    ll::thread::SharedRecursiveMutex mutex;
+    std::recursive_mutex mutex;
 
     struct ListenerInfo {
-        std::weak_ptr<ListenerBase> listener;
-        std::unordered_set<EventId> watches;
+        std::weak_ptr<ll::plugin::Plugin> plugin;
+        std::weak_ptr<ListenerBase>       listener;
+        std::unordered_set<EventId>       watches;
     };
 
     std::unordered_map<ListenerId, ListenerInfo> listeners;
-
-    ListenerId getNewListenerId() { return ++lid; }
 
     bool addListener(ListenerPtr const& listener, EventId eventId) {
         if (auto i = streams.find(eventId); i != streams.end()) {
@@ -75,8 +106,8 @@ public:
             if (streams[eventId].addListener(listener)) {
                 if (auto fac = emitterFactory.find(listener->factoryId(eventId)); fac != emitterFactory.end()) {
                     streams[eventId].emitter = fac->second(*listener);
+                    return true;
                 }
-                return true;
             }
             return false;
         }
@@ -107,76 +138,82 @@ void EventBus::setEventEmitter(std::function<std::unique_ptr<EmitterBase>(Listen
     impl->emitterFactory[eventId] = std::move(fn);
 }
 void EventBus::publish(Event& event, EventId eventId) {
-    std::shared_lock lock(impl->mutex);
-
-    if (auto i = impl->streams.find(eventId); i != impl->streams.end()) {
-        i->second.publish(event);
+    optional_ref<CallbackStream> callback = nullptr;
+    {
+        std::lock_guard lock(impl->mutex);
+        if (auto i = impl->streams.find(eventId); i != impl->streams.end()) {
+            callback = i->second;
+        } else {
+            return;
+        }
     }
+    callback->publish(event);
+}
+void EventBus::publish(std::string_view pluginName, Event& event, EventId eventId) {
+    optional_ref<CallbackStream> callback = nullptr;
+    {
+        std::lock_guard lock(impl->mutex);
+        if (auto i = impl->streams.find(eventId); i != impl->streams.end()) {
+            callback = i->second;
+        } else {
+            return;
+        }
+    }
+    callback->publish(pluginName, event);
 }
 size_t EventBus::getListenerCount(EventId eventId) {
-    std::shared_lock lock(impl->mutex);
     if (auto i = impl->streams.find(eventId); i != impl->streams.end()) {
         return i->second.count();
     }
     return 0;
 }
-bool EventBus::addListener(ListenerPtr const& listener, EventId eventId, Canneller& canneller) {
+bool EventBus::addListener(ListenerPtr const& listener, EventId eventId) {
     if (!listener) {
         return false;
     }
     std::lock_guard lock(impl->mutex);
-    if (listener->getId() == 0) {
-        listener->setId(impl->getNewListenerId());
-    }
     if (impl->addListener(listener, eventId)) {
         auto& info    = impl->listeners[listener->getId()];
+        info.plugin   = listener->pluginPtr;
         info.listener = listener;
         info.watches.emplace(eventId);
-        canneller.listeners.emplace(listener->getId());
         return true;
     }
     return false;
 }
-bool EventBus::removeListener(ListenerPtr const& listener, EventId eventId, Canneller& canneller) {
+bool EventBus::removeListener(ListenerPtr const& listener, EventId eventId) {
     if (!listener) {
         return false;
     }
+    bool            res = false;
     std::lock_guard lock(impl->mutex);
-    auto&           watches = impl->listeners[listener->getId()].watches;
-    bool            res     = false;
     if (eventId == EmptyEventId) {
+        auto& watches = impl->listeners[listener->getId()].watches;
         for (auto& eid : watches) {
             res |= impl->removeListener(listener, eid);
         }
         impl->listeners.erase(listener->getId());
-        canneller.listeners.erase(listener->getId());
     } else {
         res = impl->removeListener(listener, eventId);
         if (res) {
+            auto& watches = impl->listeners[listener->getId()].watches;
             watches.erase(eventId);
             if (watches.empty()) {
                 impl->listeners.erase(listener->getId());
-                canneller.listeners.erase(listener->getId());
             }
         }
     }
     return res;
 }
 ListenerPtr EventBus::getListener(ListenerId id) const {
-    if (id == 0) {
-        return nullptr;
-    }
-    std::shared_lock lock(impl->mutex);
+    std::lock_guard lock(impl->mutex);
     if (!impl->listeners.contains(id)) {
         return nullptr;
     }
     return impl->listeners[id].listener.lock();
 }
 bool EventBus::hasListener(ListenerId id, EventId eventId) const {
-    if (id == 0) {
-        return false;
-    }
-    std::shared_lock lock(impl->mutex);
+    std::lock_guard lock(impl->mutex);
     if (!impl->listeners.contains(id)) {
         return false;
     }
@@ -185,5 +222,18 @@ bool EventBus::hasListener(ListenerId id, EventId eventId) const {
     } else {
         return impl->listeners[id].watches.contains(eventId);
     }
+}
+size_t EventBus::removePluginListeners(std::string_view pluginName) {
+    std::lock_guard lock(impl->mutex);
+    size_t          count{};
+    for (auto& [id, listener] : impl->listeners) {
+        if (auto plugin = listener.plugin.lock()) {
+            if (plugin->getManifest().name != pluginName) {
+                continue;
+            }
+        }
+        count += removeListener(id);
+    }
+    return count;
 }
 } // namespace ll::event

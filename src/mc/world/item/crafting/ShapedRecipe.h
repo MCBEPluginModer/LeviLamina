@@ -30,7 +30,7 @@ public:
     virtual int getCraftingSize() const;
 
     // vIndex: 3, symbol: ?getIngredient@ShapedRecipe@@UEBAAEBVRecipeIngredient@@HH@Z
-    virtual class RecipeIngredient const& getIngredient(int, int) const;
+    virtual class RecipeIngredient const& getIngredient(int x, int y) const;
 
     // vIndex: 4, symbol:
     // ?getResultItem@ShapedRecipe@@UEBAAEBV?$vector@VItemInstance@@V?$allocator@VItemInstance@@@std@@@std@@XZ
@@ -40,13 +40,13 @@ public:
     virtual void __unk_vfn_5();
 
     // vIndex: 6, symbol: ?matches@ShapedRecipe@@UEBA_NAEBVCraftingContainer@@AEBVCraftingContext@@@Z
-    virtual bool matches(class CraftingContainer const&, class CraftingContext const&) const;
+    virtual bool matches(class CraftingContainer const& craftSlots, class CraftingContext const&) const;
 
     // vIndex: 7, symbol: ?size@ShapedRecipe@@UEBAHXZ
     virtual int size() const;
 
     // vIndex: 15, symbol: ?loadResultList@ShapedRecipe@@UEBAXAEBVBlockPalette@@@Z
-    virtual void loadResultList(class BlockPalette const&) const;
+    virtual void loadResultList(class BlockPalette const& blockPalette) const;
 
     // symbol: ?isShapeless@ShapedRecipe@@UEBA_NXZ
     MCVAPI bool isShapeless() const;
@@ -57,14 +57,14 @@ public:
     ShapedRecipe(std::string_view, int, int, std::vector<class RecipeIngredient> const&, std::vector<class ItemInstance> const&, class HashedString, int, class mce::UUID const*, std::optional<class RecipeUnlockingRequirement>, class SemVersion const&);
 
     // symbol: ?getIngredientsHashOffset@ShapedRecipe@@QEBA_KHHHH@Z
-    MCAPI uint64 getIngredientsHashOffset(int, int, int, int) const;
+    MCAPI uint64 getIngredientsHashOffset(int, int, int offsetX, int) const;
 
     // NOLINTEND
 
     // private:
     // NOLINTBEGIN
     // symbol: ?matches@ShapedRecipe@@AEBA_NAEBVCraftingContainer@@HH_N@Z
-    MCAPI bool matches(class CraftingContainer const&, int, int, bool) const;
+    MCAPI bool matches(class CraftingContainer const& craftSlots, int xOffs, int yOffs, bool xFlip) const;
 
     // NOLINTEND
 };

@@ -22,7 +22,7 @@ private:
     bool                              stop{false};
 
 public:
-    explicit ThreadPool(size_t nThreads) {
+    explicit ThreadPool(size_t nThreads = 1) {
         for (size_t i = 0; i < nThreads; ++i) {
             workers.emplace_back([this] {
                 ll::error_info::setSehTranslator();
@@ -53,10 +53,11 @@ public:
     template <class F, class... Args>
     decltype(auto) addTask(F&& f, Args&&... args) {
 
-        auto task = std::move(std::make_shared<std::packaged_task<std::invoke_result_t<F, Args...>()>>(
-            [f = std::forward<F>(f), args...] { return f(args...); }
-        ));
-        auto res  = task->get_future();
+        auto task =
+            std::make_shared<std::packaged_task<std::invoke_result_t<F, Args...>()>>([f = std::forward<F>(f), args...] {
+                return f(args...);
+            });
+        auto res = task->get_future();
         {
             std::lock_guard lock{mutex};
             tasks.emplace([task] { (*task)(); });

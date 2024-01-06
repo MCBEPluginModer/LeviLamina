@@ -40,11 +40,11 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@MobEquipmentPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@MobEquipmentPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0MobEquipmentPacket@@QEAA@XZ
     MCAPI MobEquipmentPacket();
@@ -53,10 +53,22 @@ public:
     MCAPI MobEquipmentPacket(class MobEquipmentPacket&&);
 
     // symbol: ??0MobEquipmentPacket@@QEAA@VActorRuntimeID@@AEBVItemStack@@HHW4ContainerID@@@Z
-    MCAPI MobEquipmentPacket(class ActorRuntimeID, class ItemStack const&, int, int, ::ContainerID);
+    MCAPI MobEquipmentPacket(
+        class ActorRuntimeID   runtimeId,
+        class ItemStack const& item,
+        int                    slot,
+        int                    selectedSlot,
+        ::ContainerID          containerId
+    );
 
     // symbol: ??0MobEquipmentPacket@@QEAA@VActorRuntimeID@@AEBVNetworkItemStackDescriptor@@HHW4ContainerID@@@Z
-    MCAPI MobEquipmentPacket(class ActorRuntimeID, class NetworkItemStackDescriptor const&, int, int, ::ContainerID);
+    MCAPI MobEquipmentPacket(
+        class ActorRuntimeID                    runtimeId,
+        class NetworkItemStackDescriptor const& item,
+        int                                     slot,
+        int                                     selectedSlot,
+        ::ContainerID                           containerId
+    );
 
     // NOLINTEND
 };

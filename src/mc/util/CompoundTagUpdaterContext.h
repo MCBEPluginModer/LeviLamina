@@ -16,14 +16,14 @@ public:
     // symbol: ??0CompoundTagUpdaterContext@@QEAA@XZ
     MCAPI CompoundTagUpdaterContext();
 
-    // symbol: ?addUpdater@CompoundTagUpdaterContext@@QEAA?AVCompoundTagUpdaterBuilder@@EEE@Z
-    MCAPI class CompoundTagUpdaterBuilder addUpdater(uchar, uchar, uchar);
+    // symbol: ?addUpdater@CompoundTagUpdaterContext@@QEAA?AVCompoundTagUpdaterNodeBuilder@@EEE@Z
+    MCAPI class CompoundTagUpdaterNodeBuilder addUpdater(uchar major, uchar minor, uchar patch);
 
     // symbol: ?sortUpdaters@CompoundTagUpdaterContext@@QEAAXXZ
     MCAPI void sortUpdaters();
 
     // symbol: ?update@CompoundTagUpdaterContext@@QEAA?AW4CompoundTagUpdaterResult@@AEAVCompoundTag@@I@Z
-    MCAPI ::CompoundTagUpdaterResult update(class CompoundTag&, uint);
+    MCAPI ::CompoundTagUpdaterResult update(class CompoundTag& tag, uint version);
 
     // NOLINTEND
 
@@ -31,8 +31,10 @@ public:
     // NOLINTBEGIN
     // symbol:
     // ?comparisonPredicate@CompoundTagUpdaterContext@@CA_NAEBV?$unique_ptr@VCompoundTagUpdater@@U?$default_delete@VCompoundTagUpdater@@@std@@@std@@0@Z
-    MCAPI static bool
-    comparisonPredicate(std::unique_ptr<class CompoundTagUpdater> const&, std::unique_ptr<class CompoundTagUpdater> const&);
+    MCAPI static bool comparisonPredicate(
+        std::unique_ptr<class CompoundTagUpdater> const& lhs,
+        std::unique_ptr<class CompoundTagUpdater> const& rhs
+    );
 
     // NOLINTEND
 };

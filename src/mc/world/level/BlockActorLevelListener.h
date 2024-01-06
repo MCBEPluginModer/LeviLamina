@@ -66,7 +66,7 @@ public:
     virtual void __unk_vfn_18();
 
     // vIndex: 19, symbol: ?onChunkLoaded@BlockActorLevelListener@@UEAAXAEAVChunkSource@@AEAVLevelChunk@@@Z
-    virtual void onChunkLoaded(class ChunkSource&, class LevelChunk&);
+    virtual void onChunkLoaded(class ChunkSource& source, class LevelChunk& lc);
 
     // vIndex: 20, symbol: __unk_vfn_20
     virtual void __unk_vfn_20();
@@ -75,7 +75,7 @@ public:
     virtual void __unk_vfn_21();
 
     // vIndex: 22, symbol: ?onChunkUnloaded@BlockActorLevelListener@@UEAAXAEAVLevelChunk@@@Z
-    virtual void onChunkUnloaded(class LevelChunk&);
+    virtual void onChunkUnloaded(class LevelChunk& lc);
 
     // vIndex: 24, symbol: __unk_vfn_24
     virtual void __unk_vfn_24();

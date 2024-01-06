@@ -4,7 +4,7 @@
 #include "magic_enum.hpp"
 
 #include "ll/api/base/Concepts.h"
-#include "ll/api/service/GlobalService.h"
+#include "ll/api/service/Bedrock.h"
 
 #include "mc/deps/json/Value.h"
 #include "mc/server/commands/CommandBlockName.h"
@@ -83,7 +83,7 @@ class DynamicCommandInstance;
  *     std::unordered_map<std::string, DynamicCommand::Result>& results
  *   ) {
  *     auto& action = results["testEnum"].get<std::string>();
- *     switch (do_hash(action.c_str()))
+ *     switch (do_hash(action))
  *     {
  *       case "add"_h:
  *         if (results["testInt"].isSet)
@@ -337,7 +337,7 @@ public:
         ParameterType type;
 
     private:
-        size_t offset = UINT64_MAX;
+        size_t offset = ~0ui64;
 
         friend struct Result;
 
@@ -356,7 +356,7 @@ public:
     struct ParameterData {
     protected:
         DynamicCommand::ParameterType type;
-        size_t                        offset = UINT64_MAX;
+        size_t                        offset = ~0ui64;
         std::string                   name;
         std::string                   description;
         std::string                   identifier;
@@ -401,14 +401,12 @@ public:
         static constexpr CommandParameterDataType getCommandParameterDataType() {
             if constexpr (type == ParameterType::Enum) return CommandParameterDataType::Enum;
             else if constexpr (type == ParameterType::SoftEnum) return CommandParameterDataType::SoftEnum;
-            // else if constexpr (type == ParameterType::Postfix)
-            //     return CommandParameterDataType::POSIFIX;
             else return CommandParameterDataType::Basic;
         }
         template <ParameterType type, class T>
         CommandParameterData makeParameterData() const {
             CommandParameterData param{
-                type == ParameterType::Enum ? Bedrock::typeid_t<CommandRegistry>::_getCounter().fetch_add(1)
+                type == ParameterType::Enum ? ++Bedrock::typeid_t<CommandRegistry>::_getCounter()
                                             : Bedrock::type_id<CommandRegistry, T>(),
                 &CommandRegistry::parse<T>,
                 name,
@@ -416,7 +414,8 @@ public:
                 description == "" ? nullptr : description.data(),
                 (int)offset,
                 optional,
-                (int)offset + std::max(8, (int)sizeof(T))};
+                (int)offset + std::max(8, (int)sizeof(T))
+            };
             param.addOptions(option);
             return param;
         }
@@ -440,7 +439,7 @@ public:
         : ParameterData(name, type, (std::string const&)enumOptions, identifer, parameterOption){};
     };
 
-    using CallBackFn = std::function<void(
+    using callback_fn = std::function<void(
         DynamicCommand const&                    cmd,
         CommandOrigin const&                     origin,
         CommandOutput&                           output,
@@ -493,7 +492,8 @@ private:
         }
     }
 
-    LLAPI static DynamicCommandInstance* preSetup(std::unique_ptr<class DynamicCommandInstance> commandInstance);
+    static DynamicCommandInstance*
+    preSetup(CommandRegistry& registry, std::unique_ptr<class DynamicCommandInstance> commandInstance);
 
 public:
     friend class DynamicCommandInstance;
@@ -503,25 +503,26 @@ public:
     /*1*/ virtual void execute(class CommandOrigin const& origin, class CommandOutput& output) const;
 
     LLAPI static std::unique_ptr<class DynamicCommandInstance> createCommand(
+        CommandRegistry&       registry,
         std::string const&     name,
         std::string const&     description,
         CommandPermissionLevel permission = CommandPermissionLevel::GameDirectors,
-        CommandFlag            flag1      = CommandFlagValue::NotCheat,
-        CommandFlag            flag2      = CommandFlagValue::None
+        CommandFlag            flag       = CommandFlagValue::NotCheat
     );
     LLAPI static std::unique_ptr<class DynamicCommandInstance> createCommand(
+        CommandRegistry&                                            registry,
         std::string const&                                          name,
         std::string const&                                          description,
         std::unordered_map<std::string, std::vector<std::string>>&& enums,
         std::vector<ParameterData>&&                                params,
         std::vector<std::vector<std::string>>&&                     overloads,
-        CallBackFn                                                  callback,
+        callback_fn                                                 callback,
         CommandPermissionLevel                                      permission = CommandPermissionLevel::GameDirectors,
-        CommandFlag                                                 flag1      = CommandFlagValue::NotCheat,
-        CommandFlag                                                 flag2      = CommandFlagValue::None
+        CommandFlag                                                 flag       = CommandFlagValue::NotCheat
     );
 
-    LLAPI static DynamicCommandInstance const* setup(std::unique_ptr<class DynamicCommandInstance> commandInstance);
+    LLAPI static DynamicCommandInstance const*
+    setup(CommandRegistry& registry, std::unique_ptr<class DynamicCommandInstance> commandInstance);
 
     /**
      * @brief Setup a command.
@@ -538,33 +539,21 @@ public:
      * @note The command name only consists of lowercase letters and `_` .
      */
     static DynamicCommandInstance const* setup(
+        CommandRegistry&                                            registry,
         std::string const&                                          name,
         std::string const&                                          description,
         std::unordered_map<std::string, std::vector<std::string>>&& enums,
         std::vector<ParameterData>&&                                params,
         std::vector<std::vector<std::string>>&&                     overloads,
-        CallBackFn                                                  callback,
+        callback_fn                                                 callback,
         CommandPermissionLevel                                      permission = CommandPermissionLevel::GameDirectors,
-        CommandFlag                                                 flag1      = CommandFlagValue::NotCheat,
-        CommandFlag                                                 flag2      = CommandFlagValue::None
-    ) {
-        return setup(createCommand(
-            name,
-            description,
-            std::move(enums),
-            std::move(params),
-            std::move(overloads),
-            std::move(callback),
-            permission,
-            flag1,
-            flag2
-        ));
-    };
+        CommandFlag                                                 flag       = CommandFlagValue::NotCheat
+    );
 
     // Experiment
-    LLAPI static bool unregisterCommand(std::string const& name);
+    LLAPI static bool unregisterCommand(CommandRegistry& registry, std::string const& name);
 
-    LLAPI static bool updateAvailableCommands();
+    LLAPI static void updateAvailableCommands(CommandRegistry& registry);
 
     LLAPI DynamicCommandInstance const* getInstance() const;
 
@@ -585,7 +574,7 @@ public:
         DynamicCommand::ParameterData& operator->() { return instance->parameterDatas.at(index); }
         bool                           isValid() const {
             size_t size = instance->parameterDatas.size();
-            return index >= 0 && index < size;
+            return index < size;
         }
     };
 
@@ -595,6 +584,7 @@ private:
     std::unique_ptr<std::string> description_;
     CommandPermissionLevel       permission_;
     CommandFlag                  flag_;
+    CommandRegistry&             registry;
 
 public:
     std::unique_ptr<ll::memory::NativeClosure<std::unique_ptr<Command>>> builder;
@@ -602,7 +592,7 @@ public:
     size_t                                                        commandSize   = sizeof(DynamicCommand);
     std::unordered_map<std::string, DynamicCommand::ParameterPtr> parameterPtrs = {};
 
-    // Use unique_ptr to keep the address of enumName.c_str() immutable
+    // Use unique_ptr to keep the address of enumName immutable
     std::vector<std::unique_ptr<std::string>>                       enumNames  = {};
     std::vector<std::string>                                        enumValues = {};
     std::unordered_map<std::string_view, std::pair<size_t, size_t>> enumRanges = {};
@@ -616,29 +606,31 @@ public:
 private:
     std::vector<std::vector<ParameterIndex>> overloads = {}; // indices of parameter instance
 
-    mutable DynamicCommand::CallBackFn callback_ = nullptr;
+    mutable DynamicCommand::callback_fn callback_ = nullptr;
 
     friend class DynamicCommand;
 
-    LLAPI DynamicCommandInstance(
-        std::string const&     name,
-        std::string const&     description,
-        CommandPermissionLevel permission = CommandPermissionLevel::GameDirectors,
-        CommandFlag            flag       = CommandFlagValue::NotCheat
-    );
-    LLAPI std::vector<CommandParameterData> buildOverload(std::vector<ParameterIndex> const& overload);
-
-public:
-    virtual ~DynamicCommandInstance();
-
-    LLAPI static std::unique_ptr<DynamicCommandInstance> create(
+    DynamicCommandInstance(
+        CommandRegistry&       registry,
         std::string const&     name,
         std::string const&     description,
         CommandPermissionLevel permission,
         CommandFlag            flag
     );
+    std::vector<CommandParameterData> buildOverload(std::vector<ParameterIndex> const& overload);
+
+public:
+    virtual ~DynamicCommandInstance();
+
+    LLAPI static std::unique_ptr<DynamicCommandInstance> create(
+        CommandRegistry&       registry,
+        std::string const&     name,
+        std::string const&     description,
+        CommandPermissionLevel permission = CommandPermissionLevel::GameDirectors,
+        CommandFlag            flag       = CommandFlagValue::NotCheat
+    );
     LLAPI std::string const& setEnum(std::string const& description, std::vector<std::string> const& values);
-    LLAPI std::string const& getEnumValue(int index) const;
+    LLAPI std::string const& getEnumValue(size_t index) const;
     LLAPI ParameterIndex     newParameter(DynamicCommand::ParameterData&& data);
     LLAPI ParameterIndex     newParameter(
             std::string const&            name,
@@ -692,13 +684,11 @@ public:
     LLAPI bool addOverload(std::vector<char const*>&& params);
     LLAPI bool addOverload(std::vector<DynamicCommand::ParameterData>&& params);
     LLAPI bool setAlias(std::string const& alias);
-    LLAPI void setCallback(DynamicCommand::CallBackFn&& callback) const;
+    LLAPI void setCallback(DynamicCommand::callback_fn&& callback) const;
     LLAPI void removeCallback() const;
     LLAPI std::string setSoftEnum(std::string const& name, std::vector<std::string> const& values) const;
     LLAPI bool        addSoftEnumValues(std::string const& name, std::vector<std::string> const& values) const;
     LLAPI bool        removeSoftEnumValues(std::string const& name, std::vector<std::string> const& values) const;
-    LLAPI static std::vector<std::string> getSoftEnumValues(std::string const& name);
-    LLAPI static std::vector<std::string> getSoftEnumNames();
 
     template <ll::concepts::IsString T>
     ParameterIndex toIndex(T const& arg) {
@@ -728,4 +718,31 @@ public:
         return newParameter(name, type, false, (std::string const&)description, identifier, parameterOption);
     };
     bool hasRegistered() const { return DynamicCommand::getInstance(getCommandName()) != nullptr; };
+};
+
+inline DynamicCommandInstance const* DynamicCommand::setup(
+    CommandRegistry&                                            registry,
+    std::string const&                                          name,
+    std::string const&                                          description,
+    std::unordered_map<std::string, std::vector<std::string>>&& enums,
+    std::vector<ParameterData>&&                                params,
+    std::vector<std::vector<std::string>>&&                     overloads,
+    callback_fn                                                 callback,
+    CommandPermissionLevel                                      permission,
+    CommandFlag                                                 flag
+) {
+    return setup(
+        registry,
+        createCommand(
+            registry,
+            name,
+            description,
+            std::move(enums),
+            std::move(params),
+            std::move(overloads),
+            std::move(callback),
+            permission,
+            flag
+        )
+    );
 };

@@ -35,17 +35,17 @@ public:
     virtual std::string getName() const;
 
     // vIndex: 3, symbol: ?write@MobArmorEquipmentPacket@@UEBAXAEAVBinaryStream@@@Z
-    virtual void write(class BinaryStream&) const;
+    virtual void write(class BinaryStream& stream) const;
 
     // vIndex: 7, symbol:
     // ?_read@MobArmorEquipmentPacket@@EEAA?AV?$Result@XVerror_code@std@@@Bedrock@@AEAVReadOnlyBinaryStream@@@Z
-    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream&);
+    virtual class Bedrock::Result<void> _read(class ReadOnlyBinaryStream& stream);
 
     // symbol: ??0MobArmorEquipmentPacket@@QEAA@XZ
     MCAPI MobArmorEquipmentPacket();
 
     // symbol: ??0MobArmorEquipmentPacket@@QEAA@AEBVActor@@@Z
-    MCAPI explicit MobArmorEquipmentPacket(class Actor const&);
+    MCAPI explicit MobArmorEquipmentPacket(class Actor const& e);
 
     // NOLINTEND
 };

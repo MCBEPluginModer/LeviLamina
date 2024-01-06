@@ -36,13 +36,13 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@WorkGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 18, symbol: ?useWorkstation@WorkGoal@@UEAAXXZ
     virtual void useWorkstation();
 
     // symbol: ??0WorkGoal@@QEAA@AEAVMob@@@Z
-    MCAPI explicit WorkGoal(class Mob&);
+    MCAPI explicit WorkGoal(class Mob& mob);
 
     // symbol: ?playPOISoundEvent@WorkGoal@@QEBAXXZ
     MCAPI void playPOISoundEvent() const;

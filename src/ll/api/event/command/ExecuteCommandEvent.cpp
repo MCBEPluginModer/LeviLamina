@@ -2,10 +2,31 @@
 #include "ll/api/event/Emitter.h"
 #include "ll/api/memory/Hook.h"
 
-#include "mc/codebuilder/MCRESULT.h"
-#include "mc/server/commands/MinecraftCommands.h"
+#include "mc/nbt/CompoundTag.h"
 
-namespace ll::event::command {
+namespace ll::event::inline command {
+
+void ExecuteCommandEvent::serialize(CompoundTag& nbt) const {
+    Event::serialize(nbt);
+    nbt["minecraftCommands"] = (uintptr_t)&minecraftCommands();
+    nbt["commandContext"]    = (uintptr_t)&commandContext();
+    nbt["suppressOutput"]    = suppressOutput();
+}
+void ExecutingCommandEvent::deserialize(CompoundTag const& nbt) {
+    Cancellable::deserialize(nbt);
+    suppressOutput() = nbt["suppressOutput"];
+}
+void ExecutedCommandEvent::serialize(CompoundTag& nbt) const {
+    ExecuteCommandEvent::serialize(nbt);
+    nbt["result"] = (uintptr_t)&result();
+}
+
+MinecraftCommands&    ExecuteCommandEvent::minecraftCommands() const { return mMinecraftCommands; }
+CommandContext const& ExecuteCommandEvent::commandContext() const { return mCommandContext; }
+bool const&           ExecuteCommandEvent::suppressOutput() const { return mSuppressOutput; }
+CommandContext&       ExecutingCommandEvent::commandContext() const { return mCommandContext; }
+bool&                 ExecutingCommandEvent::suppressOutput() const { return mSuppressOutput; }
+MCRESULT&             ExecutedCommandEvent::result() const { return mResult; }
 
 LL_TYPED_INSTANCE_HOOK(
     ExecutingCommandEventHook,
@@ -24,17 +45,6 @@ LL_TYPED_INSTANCE_HOOK(
     return origin(context, suppressOutput);
 }
 
-class ExecutingCommandEventEmitter : public Emitter<ExecutingCommandEvent> {
-public:
-    ExecutingCommandEventEmitter() { ExecutingCommandEventHook::hook(); }
-    ~ExecutingCommandEventEmitter() override { ExecutingCommandEventHook::unhook(); }
-};
-
-std::unique_ptr<EmitterBase> ExecutingCommandEvent::emitterFactory(ListenerBase&) {
-    return std::make_unique<ExecutingCommandEventEmitter>();
-}
-
-
 LL_TYPED_INSTANCE_HOOK(
     ExecutedCommandEventHook,
     HookPriority::Low,
@@ -51,13 +61,23 @@ LL_TYPED_INSTANCE_HOOK(
     return res;
 }
 
-class ExecutedCommandEventEmitter : public Emitter<ExecutedCommandEvent> {
-public:
-    ExecutedCommandEventEmitter() { ExecutedCommandEventHook::hook(); }
-    ~ExecutedCommandEventEmitter() override { ExecutedCommandEventHook::unhook(); }
+
+static std::unique_ptr<EmitterBase> executingEmitterFactory(ListenerBase&);
+class ExecutingCommandEventEmitter : public Emitter<ExecutingCommandEvent, executingEmitterFactory> {
+    memory::HookRegistrar<ExecutingCommandEventHook> hook;
 };
 
-std::unique_ptr<EmitterBase> ExecutedCommandEvent::emitterFactory(ListenerBase&) {
+static std::unique_ptr<EmitterBase> executingEmitterFactory(ListenerBase&) {
+    return std::make_unique<ExecutingCommandEventEmitter>();
+}
+
+static std::unique_ptr<EmitterBase> executedEmitterFactory(ListenerBase&);
+class ExecutedCommandEventEmitter : public Emitter<ExecutedCommandEvent, executedEmitterFactory> {
+    memory::HookRegistrar<ExecutedCommandEventHook> hook;
+};
+
+static std::unique_ptr<EmitterBase> executedEmitterFactory(ListenerBase&) {
     return std::make_unique<ExecutedCommandEventEmitter>();
 }
-} // namespace ll::event::command
+
+} // namespace ll::event::inline command

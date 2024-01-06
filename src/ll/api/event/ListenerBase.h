@@ -4,7 +4,7 @@
 
 #include "ll/api/base/StdInt.h"
 #include "ll/api/event/EventId.h"
-#include "ll/api/plugin/Plugin.h"
+#include "ll/api/plugin/NativePlugin.h"
 
 namespace ll::event {
 class EventBus;
@@ -22,35 +22,37 @@ enum class EventPriority {
 using ListenerId = uint64;
 
 class ListenerBase {
-    friend EventBus;
-    friend CallbackStream;
-    ListenerId                    id{};
-    EventPriority                 priority;
-    std::weak_ptr<plugin::Plugin> pluginPtr;
+    LLAPI static std::atomic_ullong listenerId;
 
-    void setId(ListenerId i) { id = i; }
+    friend CallbackStream;
+    friend EventBus;
+    ListenerId    id;
+    EventPriority priority;
 
 protected:
     explicit ListenerBase(
-        EventPriority                        priority,
-        std::weak_ptr<plugin::Plugin> const& plugin = plugin::Plugin::current().weak_from_this()
+        EventPriority                 priority,
+        std::weak_ptr<plugin::Plugin> plugin = plugin::NativePlugin::current()
     )
-    : priority(priority),
-      pluginPtr(plugin) {}
+    : id(listenerId++),
+      priority(priority),
+      pluginPtr(std::move(plugin)) {}
 
 public:
+    std::weak_ptr<plugin::Plugin> pluginPtr;
+
     ListenerBase(ListenerBase&&)                 = delete;
     ListenerBase(ListenerBase const&)            = delete;
     ListenerBase& operator=(ListenerBase&&)      = delete;
     ListenerBase& operator=(ListenerBase const&) = delete;
 
-    [[nodiscard]] ListenerId    getId() const { return id; }
-    [[nodiscard]] EventPriority getPriority() const { return priority; }
+    [[nodiscard]] constexpr ListenerId    getId() const { return id; }
+    [[nodiscard]] constexpr EventPriority getPriority() const { return priority; }
 
-    [[nodiscard]] bool operator==(ListenerBase const& other) const noexcept { return id == other.id; }
-    [[nodiscard]] bool operator!=(ListenerBase const& other) const noexcept { return id != other.id; }
+    [[nodiscard]] constexpr bool operator==(ListenerBase const& other) const noexcept { return id == other.id; }
+    [[nodiscard]] constexpr bool operator!=(ListenerBase const& other) const noexcept { return id != other.id; }
 
-    [[nodiscard]] std::strong_ordering operator<=>(ListenerBase const& other) const noexcept {
+    [[nodiscard]] constexpr std::strong_ordering operator<=>(ListenerBase const& other) const noexcept {
         if (priority != other.priority) {
             return priority <=> other.priority;
         }

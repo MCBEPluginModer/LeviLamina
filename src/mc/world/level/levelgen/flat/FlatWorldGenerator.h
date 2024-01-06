@@ -3,7 +3,6 @@
 #include "mc/_HeaderOutputPredefine.h"
 #include "mc/world/level/biome/source/FixedBiomeSource.h"
 #include "mc/world/level/block/BlockVolume.h"
-#include "mc/world/level/biome/source/FixedBiomeSource.h"
 
 // auto generated inclusion list
 #include "mc/deps/core/utility/buffer_span.h"
@@ -81,14 +80,14 @@ public:
     virtual void loadChunk(class LevelChunk&, bool);
 
     // symbol: ??0FlatWorldGenerator@@QEAA@AEAVDimension@@IAEBVValue@Json@@@Z
-    MCAPI FlatWorldGenerator(class Dimension&, uint, class Json::Value const&);
+    MCAPI FlatWorldGenerator(class Dimension& dimension, uint, class Json::Value const& generationOptionsJSON);
 
     // NOLINTEND
 
     // private:
     // NOLINTBEGIN
     // symbol: ?_generatePrototypeBlockValues@FlatWorldGenerator@@AEAAXAEBVFlatWorldGeneratorOptions@@F@Z
-    MCAPI void _generatePrototypeBlockValues(class FlatWorldGeneratorOptions const&, short);
+    MCAPI void _generatePrototypeBlockValues(class FlatWorldGeneratorOptions const& layersDesc, short);
 
     // NOLINTEND
 };

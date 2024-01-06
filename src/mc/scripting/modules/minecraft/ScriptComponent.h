@@ -23,12 +23,12 @@ public:
     // vIndex: 0, symbol: ??1ScriptComponent@ScriptModuleMinecraft@@UEAA@XZ
     virtual ~ScriptComponent();
 
-    // vIndex: 1, symbol: ?_isValid@ScriptActorComponent@ScriptModuleMinecraft@@MEBA_NXZ
+    // vIndex: 1, symbol: ?_isValid@AttributeScriptActorComponent@ScriptModuleMinecraft@@MEBA_NXZ
     virtual bool _isValid() const = 0;
 
     // symbol:
     // ??0ScriptComponent@ScriptModuleMinecraft@@QEAA@AEBVWeakLifetimeScope@Scripting@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    MCAPI ScriptComponent(class Scripting::WeakLifetimeScope const&, std::string const&);
+    MCAPI ScriptComponent(class Scripting::WeakLifetimeScope const& scope, std::string const& id);
 
     // symbol: ??4ScriptComponent@ScriptModuleMinecraft@@QEAAAEAV01@AEBV01@@Z
     MCAPI class ScriptModuleMinecraft::ScriptComponent& operator=(class ScriptModuleMinecraft::ScriptComponent const&);

@@ -46,7 +46,7 @@ bool CrashLogger::startCrashLoggerProcess() {
 
     std::wstring cmd = string_utils::str2wstr(fmt::format(
         "{} {} \"{}\"",
-        globalConfig.modules.crashLogger.path,
+        R"(.\plugins\LeviLamina\data\CrashLogger.exe)",
         GetCurrentProcessId(),
         ll::getBdsVersion().to_string()
     ));
@@ -96,7 +96,7 @@ static void dumpSystemInfo() {
     crashInfo.logger.info("System Info:");
     crashInfo.logger.info("  |OS Version: {}", []() -> std::string {
         RTL_OSVERSIONINFOW osVersionInfoW = [] {
-            RTL_OSVERSIONINFOW osVersionInfoW = {0};
+            RTL_OSVERSIONINFOW osVersionInfoW{};
             typedef uint(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
             HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
             if (hMod) {
@@ -171,14 +171,7 @@ static void dumpSystemInfo() {
         }()) / 1024
             / 1024 / 1024
     );
-    crashInfo.logger.info(
-        "  |LocalTime: {}",
-        fmt::format(
-            "{0:%F %T} {1}(UTC{0:%z})",
-            fmt::localtime(_time64(nullptr)),
-            tou8str(fmt::format("{:%Z}", fmt::localtime(_time64(nullptr))))
-        )
-    );
+    crashInfo.logger.info("  |LocalTime: {}", fmt::format("{0:%F %T} (UTC{0:%z})", fmt::localtime(_time64(nullptr))));
 }
 static void dumpStacktrace(_CONTEXT const& c) {
     crashInfo.logger.info("Stacktrace:");
@@ -241,13 +234,13 @@ static bool genMiniDumpFile(PEXCEPTION_POINTERS e) {
 }
 
 static LONG unhandledExceptionFilter(_In_ struct _EXCEPTION_POINTERS* e) {
+    auto lock = Logger::lock();
     try {
-
         crashInfo.date                      = fmt::format("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(_time64(nullptr)));
         crashInfo.logger.playerLevel        = -2;
         crashInfo.logger.fileLevel          = INT32_MAX;
         crashInfo.logger.consoleLevel       = INT32_MAX;
-        crashInfo.logger.info.consoleFormat = {"{0} [{1}] {3}", "{:%T}", "{}", "", "{}"};
+        crashInfo.logger.info.consoleFormat = {"{0} [{1}] {3}", "{:%T}.{:0>3}", "{}", "", "{}"};
         crashInfo.logger.info.style         = {
             fmt::fg(fmt::color::light_blue),
             fmt::fg(fmt::color::light_green),
@@ -259,8 +252,9 @@ static LONG unhandledExceptionFilter(_In_ struct _EXCEPTION_POINTERS* e) {
         crashInfo.logger.setFile(
             u8str2str((crashInfo.path / (crashInfo.settings.logPrefix + crashInfo.date + ".log")).u8string())
         );
+        crashInfo.logger.ofs.value() << std::unitbuf;
 
-        crashInfo.logger.info.fileFormat = {"{0} [{1}] {3}", "{:%F %T}", "{}", "", "{}"};
+        crashInfo.logger.info.fileFormat = {"{0} [{1}] {3}", "{:%F %T}.{:0>3}", "{}", "", "{}"};
         crashInfo.logger.error           = crashInfo.logger.info;
         crashInfo.process                = GetCurrentProcess();
         crashInfo.thread                 = GetCurrentThread();
@@ -308,7 +302,7 @@ static LONG unhandledExceptionFilter(_In_ struct _EXCEPTION_POINTERS* e) {
         crashInfo.logger.error("!!! Error In CrashLogger !!!");
         ll::error_info::printCurrentException(crashInfo.logger);
         crashInfo.logger.error("");
-        crashInfo.logger.error("\n{}", ll::utils::stacktrace_utils::toString(std::stacktrace::current()));
+        crashInfo.logger.error("\n{}", ll::stacktrace_utils::toString(std::stacktrace::current()));
     }
     std::exit((int)e->ExceptionRecord->ExceptionCode);
 }

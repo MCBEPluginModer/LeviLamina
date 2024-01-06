@@ -14,6 +14,9 @@ public:
 
 public:
     // NOLINTBEGIN
+    // vIndex: 0
+    virtual ~IConstBlockSource() = default;
+
     // vIndex: 1, symbol: ?getBlock@BlockSource@@UEBAAEBVBlock@@HHH@Z
     virtual class Block const& getBlock(int, int, int) const = 0;
 
@@ -82,7 +85,7 @@ public:
     virtual float getBrightness(class BlockPos const&) const = 0;
 
     // symbol: ?checkMaterial@IConstBlockSource@@QEBA_NAEBVAABB@@W4MaterialType@@@Z
-    MCAPI bool checkMaterial(class AABB const&, ::MaterialType) const;
+    MCAPI bool checkMaterial(class AABB const& box, ::MaterialType material) const;
 
     // NOLINTEND
 };

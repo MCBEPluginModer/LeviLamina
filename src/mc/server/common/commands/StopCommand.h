@@ -21,7 +21,7 @@ public:
     virtual void execute(class CommandOrigin const&, class CommandOutput&) const;
 
     // symbol: ?setup@StopCommand@@SAXAEAVCommandRegistry@@AEAVDedicatedServer@@@Z
-    MCAPI static void setup(class CommandRegistry&, class DedicatedServer&);
+    MCAPI static void setup(class CommandRegistry& registry, class DedicatedServer& server);
 
     // NOLINTEND
 

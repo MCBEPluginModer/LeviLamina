@@ -24,10 +24,10 @@ public:
     virtual void _onEnd(class LabTableReaction&, class BlockSource&);
 
     // symbol: ?_onStart@LabTableReactionComponent@@UEAAXAEAVLabTableReaction@@AEAVBlockSource@@@Z
-    MCVAPI void _onStart(class LabTableReaction&, class BlockSource&);
+    MCVAPI void _onStart(class LabTableReaction& owner, class BlockSource& region);
 
     // symbol: ?_onTick@LabTableReactionComponent@@UEAAXAEAVLabTableReaction@@AEAVBlockSource@@@Z
-    MCVAPI void _onTick(class LabTableReaction&, class BlockSource&);
+    MCVAPI void _onTick(class LabTableReaction& owner, class BlockSource& region);
 
     // NOLINTEND
 };

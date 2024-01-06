@@ -1,43 +1,56 @@
 #pragma once
 
-#include <ranges>
-#include <string>
-#include <unordered_map>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <string_view>
+#include <vector>
 
-#include "ll/api/Config.h"
-#include "ll/api/plugin/Manifest.h"
+#include "ll/api/base/UnorderedStringMap.h"
+#include "ll/api/plugin/Plugin.h"
 
 namespace ll::plugin {
-
-class Plugin;
-
+class PluginManagerRegistry;
 class PluginManager {
-private:
-    using Handle = memory::Handle;
+    friend PluginManagerRegistry;
 
+protected:
     struct Impl;
-    std::unique_ptr<Impl> mImpl;
-    PluginManager();
+    std::unique_ptr<Impl> impl;
 
-    auto registerPlugin(std::shared_ptr<Plugin> const& plugin) -> bool;
-    auto unregisterPlugin(std::weak_ptr<const Plugin> const& plugin) -> bool;
+    LLNDAPI std::lock_guard<std::recursive_mutex> lock();
+
+    LLNDAPI PluginManager(std::string type);
+
+    LLAPI bool addPlugin(std::string_view name, std::shared_ptr<Plugin> const& plugin);
+
+    LLAPI bool erasePlugin(std::string_view name);
+
+    virtual ~PluginManager();
+
+    virtual bool load(Manifest manifest) = 0;
+
+    virtual bool unload(std::string_view name) = 0;
+
+    virtual bool enable(std::string_view name);
+
+    virtual bool disable(std::string_view name);
 
 public:
-    LLNDAPI static PluginManager& getInstance();
+    LLNDAPI std::string_view getType() const;
 
-    LLAPI auto loadAllPlugins() -> void;
-    LLAPI auto unloadAllPlugins() -> void;
-    LLAPI auto enableAllPlugins() -> void;
-    LLAPI auto disableAllPlugins() -> void;
+    LLNDAPI bool hasPlugin(std::string_view name);
 
-    LLAPI auto loadPlugin(std::string_view pluginName) -> std::shared_ptr<Plugin>;
-    LLAPI auto unloadPlugin(std::weak_ptr<const Plugin> const& plugin) -> bool;
-    LLAPI auto enablePlugin(std::weak_ptr<const Plugin> const& plugin) -> bool;
-    LLAPI auto disablePlugin(std::weak_ptr<const Plugin> const& plugin) -> bool;
+    LLNDAPI std::weak_ptr<Plugin> getPlugin(std::string_view name);
 
-    LLNDAPI auto findPlugin(std::string_view name) -> std::weak_ptr<const Plugin>;
-    LLNDAPI auto findPlugin(Handle handle) -> std::weak_ptr<const Plugin>;
-    LLNDAPI auto getAllPlugins() -> std::vector<std::weak_ptr<const Plugin>>;
+    LLNDAPI size_t getPluginCount();
+
+    LLNDAPI std::vector<std::string> getPluginNames();
+
+    LLAPI void forEachPlugin(std::function<bool(std::string_view name, Plugin&)> const& fn);
+
+    LLAPI size_t unloadAll();
+    LLAPI size_t enableAll();
+    LLAPI size_t disableAll();
 };
-
 } // namespace ll::plugin

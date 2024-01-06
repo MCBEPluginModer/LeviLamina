@@ -34,11 +34,11 @@ public:
     // vIndex: 19, symbol: __unk_vfn_19
     virtual void __unk_vfn_19();
 
-    // vIndex: 21, symbol: ?_getContainerOffset@PlayerUIContainerModel@@MEBAHXZ
+    // vIndex: 22, symbol: ?_getContainerOffset@PlayerUIContainerModel@@MEBAHXZ
     virtual int _getContainerOffset() const;
 
     // symbol: ??0PlayerUIContainerModel@@QEAA@W4ContainerEnumName@@AEAVPlayer@@@Z
-    MCAPI PlayerUIContainerModel(::ContainerEnumName, class Player&);
+    MCAPI PlayerUIContainerModel(::ContainerEnumName containerName, class Player& player);
 
     // NOLINTEND
 };

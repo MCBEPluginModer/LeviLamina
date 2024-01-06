@@ -19,13 +19,13 @@ public:
     virtual ~SimpleContainer();
 
     // vIndex: 2, symbol: ?serverInitItemStackIds@SimpleContainer@@UEAAXHHV?$function@$$A6AXHAEBVItemStack@@@Z@std@@@Z
-    virtual void serverInitItemStackIds(int, int, std::function<void(int, class ItemStack const&)>);
+    virtual void serverInitItemStackIds(int, int count, std::function<void(int, class ItemStack const&)>);
 
     // vIndex: 5, symbol: ?getItem@SimpleContainer@@UEBAAEBVItemStack@@H@Z
-    virtual class ItemStack const& getItem(int) const;
+    virtual class ItemStack const& getItem(int slot) const;
 
     // vIndex: 10, symbol: ?setItem@SimpleContainer@@UEAAXHAEBVItemStack@@@Z
-    virtual void setItem(int, class ItemStack const&);
+    virtual void setItem(int slot, class ItemStack const& item);
 
     // vIndex: 16, symbol: ?getContainerSize@SimpleContainer@@UEBAHXZ
     virtual int getContainerSize() const;
@@ -50,7 +50,7 @@ public:
 
     // symbol:
     // ??0SimpleContainer@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_NHW4ContainerType@@@Z
-    MCAPI SimpleContainer(std::string const&, bool, int, ::ContainerType);
+    MCAPI SimpleContainer(std::string const& name, bool customName, int size, ::ContainerType containerType);
 
     // NOLINTEND
 };

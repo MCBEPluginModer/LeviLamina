@@ -12,8 +12,11 @@ namespace ll::form::handler {
 class FormHandler {
 
 public:
-    virtual void                   handle(Player& player, std::string const& data) const = 0;
-    [[nodiscard]] virtual FormType getType() const                                       = 0;
+    virtual ~FormHandler() = default;
+
+    virtual void handle(Player& player, std::string const& data) const = 0;
+
+    [[nodiscard]] virtual FormType getType() const = 0;
 };
 
 class SimpleFormHandler : public FormHandler {
@@ -53,7 +56,5 @@ public:
 };
 
 uint addFormHandler(std::unique_ptr<FormHandler>&& data);
-
-void handleFormPacket(Player& player, uint formId, std::string const& data);
 
 } // namespace ll::form::handler

@@ -1,24 +1,38 @@
 #pragma once
 
+#if _HAS_CXX23
+#include <expected>
+#endif
+
 #include "mc/_HeaderOutputPredefine.h"
 #include "mc/deps/core/common/bedrock/ErrorInfo.h"
 
 namespace Bedrock {
 
+#if _HAS_CXX23
+template <typename T, typename Err>
+class Result : public std::expected<T, ErrorInfo<Err>> {
+public:
+    using Base = std::expected<T, ErrorInfo<Err>>;
+    using Base::Base;
+};
+#else
 template <typename T, typename Err>
 class Result {
-
-public:
+    using value_type = std::conditional_t<std::is_void_v<T>, char, T>;
     union {
-        T              mValue;
+        value_type     mValue;
         ErrorInfo<Err> mError;
     };
     bool mHasValue;
 
 public:
-    explicit Result(T&& value) : mValue(std::move(value)), mHasValue(true) {}
+    template <class... Args>
+    [[nodiscard]] Result(Args&&... args) : mValue(std::forward<Args>(args)...),
+                                           mHasValue(true) {}
+    [[nodiscard]] Result(ErrorInfo<Err> err) : mError(std::move(err)), mHasValue(false) {}
 
-    Result(Result&& other) noexcept {
+    [[nodiscard]] Result(Result&& other) noexcept {
         mHasValue = other.mHasValue;
         if (mHasValue) {
             mValue = std::move(other.mValue);
@@ -26,46 +40,76 @@ public:
             mError = std::move(other.mError);
         }
     }
+    Result& operator=(Result&& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        mHasValue = other.mHasValue;
+        if (mHasValue) {
+            mValue = std::move(other.mValue);
+        } else {
+            mError = std::move(other.mError);
+        }
+        return *this;
+    }
+    [[nodiscard]] Result(Result const& other) noexcept {
+        mHasValue = other.mHasValue;
+        if (mHasValue) {
+            mValue = other.mValue;
+        } else {
+            mError = other.mError;
+        }
+    }
+    Result& operator=(Result const& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        mHasValue = other.mHasValue;
+        if (mHasValue) {
+            mValue = other.mValue;
+        } else {
+            mError = other.mError;
+        }
+    }
 
     [[nodiscard]] bool has_value() const { return mHasValue; }
 
-    T& value() {
-        if (!mHasValue) { std::rethrow_exception(std::make_exception_ptr(mError.getError())); }
+    [[nodiscard]] explicit operator bool() const { return mHasValue; }
+
+    [[nodiscard]] Err& error() {
+        if (mHasValue) throw std::logic_error("Bad error result access.");
+        return mError.code();
+    }
+
+    [[nodiscard]] value_type& value()
+        requires(!std::is_void_v<T>)
+    {
+        if (!mHasValue) {
+            throw std::system_error(error());
+        }
         return mValue;
     }
 
-    Err& error() {
-        if (mHasValue) throw std::logic_error("Bad error result access.");
-        return mError;
+    [[nodiscard]] value_type* operator->()
+        requires(!std::is_void_v<T>)
+    {
+        return &value();
+    }
+
+    [[nodiscard]] value_type& operator*()
+        requires(!std::is_void_v<T>)
+    {
+        return value();
+    }
+
+    ~Result() {
+        if (mHasValue) {
+            mValue.~value_type();
+        } else {
+            mError.~ErrorInfo<Err>();
+        }
     }
 };
-
-template <typename Err>
-class Result<void, Err> {
-
-public:
-    ErrorInfo<Err> mError;
-    bool           mHasValue;
-
-public:
-    Result() : mHasValue(true) {}
-
-    Result(Result&& other) noexcept {
-        mHasValue = other.mHasValue;
-        if (!mHasValue) { mError = std::move(other.mError); }
-    }
-
-    [[nodiscard]] bool has_value() const { return mHasValue; }
-
-    void value() {
-        if (!mHasValue) { std::rethrow_exception(std::make_exception_ptr(mError.getError())); }
-        // No value to return as T is void
-    }
-
-    Err& error() {
-        if (mHasValue) throw std::logic_error("Bad error result access.");
-        return mError;
-    }
-};
+#endif
 
 }; // namespace Bedrock

@@ -3,13 +3,17 @@
 #include "mc/_HeaderOutputPredefine.h"
 #include "mc/entity/EntityContext.h"
 
+class Actor;
+
 class StackResultStorageEntity {
 public:
     std::optional<EntityContext> mContext;
 
-    template <class Entity, bool IncludeRemoved = false>
-    [[nodiscard]] inline Entity* tryUnwrap() {
-        if (_hasValue()) { return Entity::tryGetFromEntity(_getStackRef(), IncludeRemoved); }
+    template <class Entity = Actor, bool IncludeRemoved = false>
+    [[nodiscard]] optional_ref<Entity> tryUnwrap() const {
+        if (_hasValue()) {
+            return Entity::tryGetFromEntity(_getStackRef(), IncludeRemoved);
+        }
         return nullptr;
     }
 
@@ -22,13 +26,13 @@ public:
     // protected:
     // NOLINTBEGIN
     // symbol: ??0StackResultStorageEntity@@IEAA@AEBVOwnerStorageEntity@@@Z
-    MCAPI explicit StackResultStorageEntity(class OwnerStorageEntity const&);
+    MCAPI explicit StackResultStorageEntity(class OwnerStorageEntity const& ownerStorage);
 
     // symbol: ??0StackResultStorageEntity@@IEAA@$$QEAV0@@Z
-    MCAPI StackResultStorageEntity(class StackResultStorageEntity&&);
+    MCAPI StackResultStorageEntity(class StackResultStorageEntity&& other);
 
     // symbol: ??0StackResultStorageEntity@@IEAA@AEBVWeakStorageEntity@@@Z
-    MCAPI explicit StackResultStorageEntity(class WeakStorageEntity const&);
+    MCAPI explicit StackResultStorageEntity(class WeakStorageEntity const& weakStorage);
 
     // symbol: ?_getStackRef@StackResultStorageEntity@@IEBAAEAVEntityContext@@XZ
     MCAPI class EntityContext& _getStackRef() const;

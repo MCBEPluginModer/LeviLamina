@@ -1,21 +1,21 @@
 #pragma once
 
-#include "ll/api/base/Macro.h"
 #include "ll/api/event/Cancellable.h"
-#include "ll/api/event/Event.h"
+#include "ll/api/event/player/PlayerEvent.h"
 
-#include "mc/world/actor/player/Player.h"
+namespace ll::event::inline player {
 
-namespace ll::event::player {
-class PlayerChangePermEvent : public Cancellable<Event> {
+class PlayerChangePermEvent : public Cancellable<PlayerEvent> {
+    CommandPermissionLevel& mMewPerm;
+
 public:
-    Player&                 player;
-    CommandPermissionLevel& newPerm;
-
     constexpr explicit PlayerChangePermEvent(Player& player, CommandPermissionLevel& newPerm)
-    : player(player),
-      newPerm(newPerm) {}
+    : Cancellable(player),
+      mMewPerm(newPerm) {}
 
-    LLNDAPI static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&);
+    LLAPI void serialize(CompoundTag&) const override;
+    LLAPI void deserialize(CompoundTag const&) override;
+
+    LLNDAPI CommandPermissionLevel& newPerm() const;
 };
-} // namespace ll::event::player
+} // namespace ll::event::inline player

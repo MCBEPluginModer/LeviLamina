@@ -13,9 +13,9 @@ class BlockActor {
 public:
     LLAPI void refresh(optional_ref<class BlockSource> blockSource = std::nullopt);
 
-    LLNDAPI std::unique_ptr<class CompoundTag> saveToNBT() const;
+    LLNDAPI std::unique_ptr<class CompoundTag> saveToNbt() const;
 
-    LLAPI void loadFromNBT(class CompoundTag const& nbt, optional_ref<class BlockSource> blockSource = std::nullopt);
+    LLAPI void loadFromNbt(class CompoundTag const& nbt, optional_ref<class BlockSource> blockSource = std::nullopt);
 
     LLNDAPI static std::shared_ptr<BlockActor> create(class CompoundTag const& nbt);
 
@@ -32,13 +32,13 @@ public:
     virtual ~BlockActor();
 
     // vIndex: 1, symbol: ?load@BlockActor@@UEAAXAEAVLevel@@AEBVCompoundTag@@AEAVDataLoadHelper@@@Z
-    virtual void load(class Level&, class CompoundTag const&, class DataLoadHelper&);
+    virtual void load(class Level&, class CompoundTag const& tag, class DataLoadHelper&);
 
     // vIndex: 2, symbol: ?save@BlockActor@@UEBA_NAEAVCompoundTag@@@Z
-    virtual bool save(class CompoundTag&) const;
+    virtual bool save(class CompoundTag& tag) const;
 
     // vIndex: 3, symbol: ?saveItemInstanceData@BlockActor@@UEAA_NAEAVCompoundTag@@@Z
-    virtual bool saveItemInstanceData(class CompoundTag&);
+    virtual bool saveItemInstanceData(class CompoundTag& tag);
 
     // vIndex: 4, symbol: ?saveBlockData@BlockActor@@UEBAXAEAVCompoundTag@@AEAVBlockSource@@@Z
     virtual void saveBlockData(class CompoundTag&, class BlockSource&) const;
@@ -50,7 +50,7 @@ public:
     virtual void onCustomTagLoadDone(class BlockSource&);
 
     // vIndex: 7, symbol: ?tick@BlockActor@@UEAAXAEAVBlockSource@@@Z
-    virtual void tick(class BlockSource&);
+    virtual void tick(class BlockSource& region);
 
     // vIndex: 8, symbol: ?onChanged@BlockActor@@UEAAXAEAVBlockSource@@@Z
     virtual void onChanged(class BlockSource&);
@@ -99,7 +99,7 @@ public:
 
     // vIndex: 23, symbol:
     // ?getDebugText@BlockActor@@UEAAXAEAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@AEBVBlockPos@@@Z
-    virtual void getDebugText(std::vector<std::string>&, class BlockPos const&);
+    virtual void getDebugText(std::vector<std::string>& outputInfo, class BlockPos const& debugPos);
 
     // vIndex: 24, symbol:
     // ?getCustomName@BlockActor@@UEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
@@ -114,7 +114,7 @@ public:
 
     // vIndex: 27, symbol:
     // ?setCustomName@BlockActor@@UEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void setCustomName(std::string const&);
+    virtual void setCustomName(std::string const& name);
 
     // vIndex: 28, symbol:
     // ?getImmersiveReaderText@BlockActor@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVBlockSource@@@Z
@@ -163,7 +163,7 @@ public:
     virtual void _onUpdatePacket(class CompoundTag const&, class BlockSource&);
 
     // vIndex: 42, symbol: ?_playerCanUpdate@BlockActor@@MEBA_NAEBVPlayer@@@Z
-    virtual bool _playerCanUpdate(class Player const&) const;
+    virtual bool _playerCanUpdate(class Player const& fromPlayer) const;
 
     // symbol: ?eraseLootTable@BlockActor@@UEAAXXZ
     MCVAPI void eraseLootTable();
@@ -197,10 +197,10 @@ public:
 
     // symbol:
     // ??0BlockActor@@QEAA@W4BlockActorType@@AEBVBlockPos@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    MCAPI BlockActor(::BlockActorType, class BlockPos const&, std::string const&);
+    MCAPI BlockActor(::BlockActorType type, class BlockPos const& pos, std::string const& id);
 
     // symbol: ?assignBlockIfNotAssigned@BlockActor@@QEAAXAEAVBlockSource@@@Z
-    MCAPI void assignBlockIfNotAssigned(class BlockSource&);
+    MCAPI void assignBlockIfNotAssigned(class BlockSource& region);
 
     // symbol: ?getAABB@BlockActor@@QEBAAEBVAABB@@XZ
     MCAPI class AABB const& getAABB() const;
@@ -213,7 +213,7 @@ public:
 
     // symbol:
     // ?getServerUpdatePacket@BlockActor@@QEAA?AV?$unique_ptr@VBlockActorDataPacket@@U?$default_delete@VBlockActorDataPacket@@@std@@@std@@AEAVBlockSource@@@Z
-    MCAPI std::unique_ptr<class BlockActorDataPacket> getServerUpdatePacket(class BlockSource&);
+    MCAPI std::unique_ptr<class BlockActorDataPacket> getServerUpdatePacket(class BlockSource& region);
 
     // symbol: ?getType@BlockActor@@QEBAAEBW4BlockActorType@@XZ
     MCAPI ::BlockActorType const& getType() const;
@@ -222,30 +222,30 @@ public:
     MCAPI bool isChanged() const;
 
     // symbol: ?isType@BlockActor@@QEBA_NW4BlockActorType@@@Z
-    MCAPI bool isType(::BlockActorType) const;
+    MCAPI bool isType(::BlockActorType type) const;
 
     // symbol: ?moveTo@BlockActor@@QEAAXAEBVBlockPos@@@Z
-    MCAPI void moveTo(class BlockPos const&);
+    MCAPI void moveTo(class BlockPos const& newPos);
 
     // symbol: ?onUpdatePacket@BlockActor@@QEAA_NAEBVCompoundTag@@AEAVBlockSource@@PEBVPlayer@@@Z
-    MCAPI bool onUpdatePacket(class CompoundTag const&, class BlockSource&, class Player const*);
+    MCAPI bool onUpdatePacket(class CompoundTag const& data, class BlockSource& region, class Player const* fromPlayer);
 
     // symbol: ?setChanged@BlockActor@@QEAAXXZ
     MCAPI void setChanged();
 
     // symbol: ?setCustomNameSaved@BlockActor@@QEAAX_N@Z
-    MCAPI void setCustomNameSaved(bool);
+    MCAPI void setCustomNameSaved(bool saveCustomName);
 
     // symbol: ?setMovable@BlockActor@@QEAAX_N@Z
-    MCAPI void setMovable(bool);
+    MCAPI void setMovable(bool canMove);
 
     // symbol: ?isType@BlockActor@@SA_NAEAV1@W4BlockActorType@@@Z
-    MCAPI static bool isType(class BlockActor&, ::BlockActorType);
+    MCAPI static bool isType(class BlockActor& te, ::BlockActorType type);
 
     // symbol:
     // ?loadStatic@BlockActor@@SA?AV?$shared_ptr@VBlockActor@@@std@@AEAVLevel@@AEBVCompoundTag@@AEAVDataLoadHelper@@@Z
     MCAPI static std::shared_ptr<class BlockActor>
-    loadStatic(class Level&, class CompoundTag const&, class DataLoadHelper&);
+    loadStatic(class Level& level, class CompoundTag const& tag, class DataLoadHelper& dataLoadHelper);
 
     // NOLINTEND
 

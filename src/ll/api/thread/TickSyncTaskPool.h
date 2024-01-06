@@ -13,34 +13,53 @@
 #include "ll/api/base/StdInt.h"
 
 namespace ll::thread {
+class TickSyncTaskPool;
+namespace detail {
 struct TickSyncTaskPoolWorker;
+LLETAPI std::mutex poolListMutex;
+LLETAPI std::atomic_size_t poolListSize;
+LLETAPI std::vector<std::reference_wrapper<TickSyncTaskPool>> poolList;
+LLAPI void                                                    notifyWorker();
+}; // namespace detail
+
 class TickSyncTaskPool {
-    friend TickSyncTaskPoolWorker;
+    friend detail::TickSyncTaskPoolWorker;
 
 private:
-    LLAPI static std::vector<std::function<void()>> tasks;
-    LLAPI static std::atomic_bool                   hasTask;
-    LLAPI static std::mutex                         mutex;
-
-    LLAPI static void notify();
+    std::queue<std::function<void()>> tasks;
+    std::mutex                        mutex;
+    size_t                            tasksPerTick;
+    size_t                            id;
 
 public:
-    explicit TickSyncTaskPool(size_t) {}
-    ~TickSyncTaskPool() = default;
+    explicit TickSyncTaskPool(size_t tasksPerTick = ~0ui64) : tasksPerTick(tasksPerTick) {
+        using namespace detail;
+        std::lock_guard lock(poolListMutex);
+        id = poolList.size();
+        poolList.emplace_back(std::ref(*this));
+        ++poolListSize;
+        notifyWorker();
+    }
+    ~TickSyncTaskPool() {
+        using namespace detail;
+        std::lock_guard lock(poolListMutex);
+        std::swap(poolList[id], poolList.back());
+        poolList.pop_back();
+        --poolListSize;
+    }
 
     template <class F, class... Args>
     decltype(auto) addTask(F&& f, Args&&... args) {
 
-        auto task = std::move(std::make_shared<std::packaged_task<std::invoke_result_t<F, Args...>()>>(
-            [f = std::forward<F>(f), args...] { return f(args...); }
-        ));
-        auto res  = task->get_future();
+        auto task =
+            std::make_shared<std::packaged_task<std::invoke_result_t<F, Args...>()>>([f = std::forward<F>(f), args...] {
+                return f(args...);
+            });
+        auto res = task->get_future();
         {
             std::lock_guard lock{mutex};
-            tasks.emplace_back([task] { (*task)(); });
+            tasks.emplace([task] { (*task)(); });
         }
-        notify();
-
         return res;
     }
 };

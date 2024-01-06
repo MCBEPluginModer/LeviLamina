@@ -57,13 +57,13 @@ public:
 
     // vIndex: 32, symbol:
     // ?_getBaseCommandBlock@MinecartBlockCommandOrigin@@MEBAPEAVBaseCommandBlock@@AEAVBlockSource@@@Z
-    virtual class BaseCommandBlock* _getBaseCommandBlock(class BlockSource&) const;
+    virtual class BaseCommandBlock* _getBaseCommandBlock(class BlockSource& region) const;
 
     // vIndex: 33, symbol: ?_getBlockEntity@MinecartBlockCommandOrigin@@MEBAPEAVCommandBlockActor@@AEAVBlockSource@@@Z
-    virtual class CommandBlockActor* _getBlockEntity(class BlockSource&) const;
+    virtual class CommandBlockActor* _getBlockEntity(class BlockSource& region) const;
 
     // symbol: ??0MinecartBlockCommandOrigin@@QEAA@AEAVBlockSource@@AEBUActorUniqueID@@@Z
-    MCAPI MinecartBlockCommandOrigin(class BlockSource&, struct ActorUniqueID const&);
+    MCAPI MinecartBlockCommandOrigin(class BlockSource& region, struct ActorUniqueID const& minecartId);
 
     // NOLINTEND
 };

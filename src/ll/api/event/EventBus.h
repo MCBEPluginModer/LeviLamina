@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "ll/api/base/Concepts.h"
 #include "ll/api/base/Macro.h"
 #include "ll/api/event/Event.h"
 #include "ll/api/event/EventId.h"
@@ -18,33 +19,12 @@ private:
     std::unique_ptr<EventBusImpl> impl;
     EventBus();
 
-    class Canneller {
-        friend EventBus;
-        std::unordered_set<ListenerId> listeners{};
-        Canneller() = default;
-        ~Canneller() {
-            auto list = listeners;
-            for (auto id : list) {
-                EventBus::getInstance().removeListener(id);
-            }
-        }
-
-    public:
-        static Canneller& getInstance() {
-            static Canneller ins{};
-            return ins;
-        }
-    };
-
-    LLAPI bool   addListener(ListenerPtr const&, EventId, Canneller& = Canneller::getInstance());
-    LLAPI bool   removeListener(ListenerPtr const&, EventId, Canneller& = Canneller::getInstance());
-    LLNDAPI bool hasListener(ListenerId, EventId) const;
-
-
 public:
     LLNDAPI static EventBus& getInstance();
 
     LLAPI void publish(Event&, EventId);
+
+    LLAPI void publish(std::string_view pluginName, Event&, EventId);
 
     LLAPI void setEventEmitter(std::function<std::unique_ptr<EmitterBase>(ListenerBase&)> fn, EventId eventId);
 
@@ -59,6 +39,12 @@ public:
         publish(event, getEventId<T>);
     }
 
+    template <class T>
+        requires(std::derived_from<std::remove_cvref_t<T>, Event>)
+    void publish(std::string_view pluginName, T&& event) {
+        publish(pluginName, event, getEventId<T>);
+    }
+
     LLNDAPI size_t getListenerCount(EventId);
 
     template <std::derived_from<Event> T>
@@ -66,26 +52,34 @@ public:
         return getListenerCount(getEventId<T>);
     }
 
-    template <class T, template <class> class L, class LT>
-        requires(std::derived_from<T, LT> && std::derived_from<L<LT>, ListenerBase>)
-    bool addListener(std::shared_ptr<L<LT>> const& listener) {
-        if constexpr (requires(L<LT> a) {
+    LLAPI bool addListener(ListenerPtr const&, EventId);
+
+    template <class T, template <class...> class L, class... LT>
+        requires((std::derived_from<T, LT> || ...) && std::derived_from<L<LT...>, ListenerBase>)
+    bool addListener(std::shared_ptr<L<LT...>> const& listener) {
+        if constexpr (requires(L<LT...> a) {
                           { a.getEventId() } -> std::same_as<EventId>;
-                      } && std::is_same_v<T, LT>) {
+                      } && concepts::is_all_same_v<T, LT...>) {
             return addListener(listener, listener->getEventId());
+        } else {
+            return addListener(listener, getEventId<T>);
         }
-        return addListener(listener, getEventId<T>);
     }
-    template <class T = void, template <class> class L, class LT>
-        requires(std::same_as<T, void> && std::derived_from<L<LT>, ListenerBase>)
-    bool addListener(std::shared_ptr<L<LT>> const& listener) {
-        return addListener<LT>(listener);
+    template <class T = void, template <class...> class L, class... LT>
+        requires(std::same_as<T, void> && std::derived_from<L<LT...>, ListenerBase>)
+    bool addListener(std::shared_ptr<L<LT...>> const& listener) {
+        return (addListener<LT>(listener) && ...);
     }
     template <std::derived_from<Event> T, std::derived_from<ListenerBase> L = Listener<T>, class... Args>
     inline auto emplaceListener(Args&&... args) {
         auto res = L::create(std::forward<Args>(args)...);
-        return addListener<T>(res);
+        if (!addListener<T>(res)) {
+            res = nullptr;
+        }
+        return res;
     }
+
+    LLAPI bool removeListener(ListenerPtr const&, EventId);
 
     bool removeListener(ListenerPtr const& listener) { return removeListener(listener, EmptyEventId); }
     template <std::derived_from<Event> T>
@@ -116,12 +110,17 @@ public:
         }
         return false;
     }
+
+    LLNDAPI bool hasListener(ListenerId, EventId) const;
+
     [[nodiscard]] bool hasListener(ListenerId id) const { return hasListener(id, EmptyEventId); }
 
     template <std::derived_from<Event> T>
     [[nodiscard]] bool hasListener(ListenerId id) const {
         return hasListener(id, getEventId<T>);
     }
+
+    LLAPI size_t removePluginListeners(std::string_view pluginName);
 };
 
 } // namespace ll::event

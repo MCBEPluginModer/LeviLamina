@@ -19,16 +19,16 @@ public:
     virtual ~BannerBlockActor() = default;
 
     // vIndex: 1, symbol: ?load@BannerBlockActor@@UEAAXAEAVLevel@@AEBVCompoundTag@@AEAVDataLoadHelper@@@Z
-    virtual void load(class Level&, class CompoundTag const&, class DataLoadHelper&);
+    virtual void load(class Level& level, class CompoundTag const& tag, class DataLoadHelper& dataLoadHelper);
 
     // vIndex: 2, symbol: ?save@BannerBlockActor@@UEBA_NAEAVCompoundTag@@@Z
-    virtual bool save(class CompoundTag&) const;
+    virtual bool save(class CompoundTag& tag) const;
 
     // vIndex: 7, symbol: ?tick@BannerBlockActor@@UEAAXAEAVBlockSource@@@Z
-    virtual void tick(class BlockSource&);
+    virtual void tick(class BlockSource& region);
 
     // vIndex: 11, symbol: ?onPlace@BannerBlockActor@@UEAAXAEAVBlockSource@@@Z
-    virtual void onPlace(class BlockSource&);
+    virtual void onPlace(class BlockSource& region);
 
     // vIndex: 12, symbol: __unk_vfn_12
     virtual void __unk_vfn_12();
@@ -62,31 +62,31 @@ public:
 
     // vIndex: 40, symbol:
     // ?_getUpdatePacket@BannerBlockActor@@MEAA?AV?$unique_ptr@VBlockActorDataPacket@@U?$default_delete@VBlockActorDataPacket@@@std@@@std@@AEAVBlockSource@@@Z
-    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource&);
+    virtual std::unique_ptr<class BlockActorDataPacket> _getUpdatePacket(class BlockSource& region);
 
     // vIndex: 41, symbol: ?_onUpdatePacket@BannerBlockActor@@MEAAXAEBVCompoundTag@@AEAVBlockSource@@@Z
-    virtual void _onUpdatePacket(class CompoundTag const&, class BlockSource&);
+    virtual void _onUpdatePacket(class CompoundTag const& data, class BlockSource& region);
 
     // symbol: ?getBaseColorInt@BannerBlockActor@@QEBAEXZ
     MCAPI uchar getBaseColorInt() const;
 
     // symbol: ?setItemValues@BannerBlockActor@@QEAAXAEBVItemStackBase@@@Z
-    MCAPI void setItemValues(class ItemStackBase const&);
+    MCAPI void setItemValues(class ItemStackBase const& instance);
 
     // symbol: ?getBannerType@BannerBlockActor@@SA?AW4BannerBlockType@@PEBVCompoundTag@@@Z
-    MCAPI static ::BannerBlockType getBannerType(class CompoundTag const*);
+    MCAPI static ::BannerBlockType getBannerType(class CompoundTag const* tag);
 
     // symbol: ?getBaseColor@BannerBlockActor@@SAHAEBVItemStack@@@Z
-    MCAPI static int getBaseColor(class ItemStack const&);
+    MCAPI static int getBaseColor(class ItemStack const& item);
 
     // symbol: ?getPatternCount@BannerBlockActor@@SAHPEBVCompoundTag@@@Z
-    MCAPI static int getPatternCount(class CompoundTag const*);
+    MCAPI static int getPatternCount(class CompoundTag const* tagElement);
 
     // symbol: ?isDefaultBanner@BannerBlockActor@@SA_NAEBVItemStackBase@@@Z
-    MCAPI static bool isDefaultBanner(class ItemStackBase const&);
+    MCAPI static bool isDefaultBanner(class ItemStackBase const& instance);
 
     // symbol: ?removeLastPattern@BannerBlockActor@@SA_NAEAVItemStack@@AEAVPlayer@@@Z
-    MCAPI static bool removeLastPattern(class ItemStack&, class Player&);
+    MCAPI static bool removeLastPattern(class ItemStack& instance, class Player&);
 
     // symbol: ?MAX_PATTERNS@BannerBlockActor@@2HB
     MCAPI static int const MAX_PATTERNS;

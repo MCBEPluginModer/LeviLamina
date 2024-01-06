@@ -21,14 +21,14 @@ public:
     virtual void __unk_vfn_1();
 
     // vIndex: 2, symbol: ?tick@MobEffectSystem@@UEAAXAEAVEntityRegistry@@@Z
-    virtual void tick(class EntityRegistry&);
+    virtual void tick(class EntityRegistry& registry);
 
     // NOLINTEND
 
     // private:
     // NOLINTBEGIN
     // symbol: ?_tickComponent@MobEffectSystem@@CAXAEAVActorOwnerComponent@@AEAVMobEffectComponent@@@Z
-    MCAPI static void _tickComponent(class ActorOwnerComponent&, class MobEffectComponent&);
+    MCAPI static void _tickComponent(class ActorOwnerComponent&, class MobEffectComponent& mobEffectComponent);
 
     // NOLINTEND
 };

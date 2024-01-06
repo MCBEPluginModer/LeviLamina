@@ -28,8 +28,11 @@ public:
     // ?getName@BlockCollisionBoxDescription@@UEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
     virtual std::string const& getName() const;
 
-    // vIndex: 3, symbol: ?initializeComponent@BlockCollisionBoxDescription@@UEBAXAEAVBlockComponentStorage@@@Z
+    // vIndex: 2, symbol: ?initializeComponent@BlockCollisionBoxDescription@@UEBAXAEAVBlockComponentStorage@@@Z
     virtual void initializeComponent(class BlockComponentStorage&) const;
+
+    // vIndex: 3, symbol: __unk_vfn_3
+    virtual void __unk_vfn_3();
 
     // vIndex: 4, symbol: ?initializeComponentFromCode@BlockCollisionBoxDescription@@UEBAXAEAVBlockComponentStorage@@@Z
     virtual void initializeComponentFromCode(class BlockComponentStorage&) const;
@@ -49,10 +52,10 @@ public:
     virtual void initializeFromNetwork(class CompoundTag const&, struct cereal::ReflectionCtx const&);
 
     // symbol: ??0BlockCollisionBoxDescription@@QEAA@_N@Z
-    MCAPI explicit BlockCollisionBoxDescription(bool);
+    MCAPI explicit BlockCollisionBoxDescription(bool enabled);
 
     // symbol: ??0BlockCollisionBoxDescription@@QEAA@AEBVVec3@@0@Z
-    MCAPI BlockCollisionBoxDescription(class Vec3 const&, class Vec3 const&);
+    MCAPI BlockCollisionBoxDescription(class Vec3 const& origin, class Vec3 const& size);
 
     // symbol: ?bindType@BlockCollisionBoxDescription@@SAXAEAUReflectionCtx@cereal@@@Z
     MCAPI static void bindType(struct cereal::ReflectionCtx&);

@@ -30,20 +30,32 @@ public:
     // vIndex: 0, symbol: ??1LiquidBlock@@UEAA@XZ
     virtual ~LiquidBlock();
 
-    // vIndex: 6, symbol:
+    // vIndex: 5, symbol:
     // ?getCollisionShape@LiquidBlock@@UEBA?AVAABB@@AEBVBlock@@AEBVIConstBlockSource@@AEBVBlockPos@@V?$optional_ref@$$CBVGetCollisionShapeInterface@@@@@Z
     virtual class AABB
     getCollisionShape(class Block const&, class IConstBlockSource const&, class BlockPos const&, class optional_ref<class GetCollisionShapeInterface const>)
         const;
 
-    // vIndex: 22, symbol: __unk_vfn_22
-    virtual void __unk_vfn_22();
+    // vIndex: 20, symbol: __unk_vfn_20
+    virtual void __unk_vfn_20();
+
+    // vIndex: 27, symbol: __unk_vfn_27
+    virtual void __unk_vfn_27();
+
+    // vIndex: 28, symbol: __unk_vfn_28
+    virtual void __unk_vfn_28();
+
+    // vIndex: 29, symbol: __unk_vfn_29
+    virtual void __unk_vfn_29();
+
+    // vIndex: 30, symbol: __unk_vfn_30
+    virtual void __unk_vfn_30();
 
     // vIndex: 31, symbol: __unk_vfn_31
     virtual void __unk_vfn_31();
 
-    // vIndex: 32, symbol: __unk_vfn_32
-    virtual void __unk_vfn_32();
+    // vIndex: 33, symbol: __unk_vfn_33
+    virtual void __unk_vfn_33();
 
     // vIndex: 34, symbol: __unk_vfn_34
     virtual void __unk_vfn_34();
@@ -54,11 +66,11 @@ public:
     // vIndex: 36, symbol: __unk_vfn_36
     virtual void __unk_vfn_36();
 
+    // vIndex: 37, symbol: __unk_vfn_37
+    virtual void __unk_vfn_37();
+
     // vIndex: 38, symbol: __unk_vfn_38
     virtual void __unk_vfn_38();
-
-    // vIndex: 39, symbol: __unk_vfn_39
-    virtual void __unk_vfn_39();
 
     // vIndex: 40, symbol: __unk_vfn_40
     virtual void __unk_vfn_40();
@@ -75,158 +87,140 @@ public:
     // vIndex: 44, symbol: __unk_vfn_44
     virtual void __unk_vfn_44();
 
-    // vIndex: 46, symbol: __unk_vfn_46
-    virtual void __unk_vfn_46();
-
-    // vIndex: 47, symbol: __unk_vfn_47
-    virtual void __unk_vfn_47();
+    // vIndex: 45, symbol: __unk_vfn_45
+    virtual void __unk_vfn_45();
 
     // vIndex: 48, symbol: __unk_vfn_48
     virtual void __unk_vfn_48();
 
-    // vIndex: 49, symbol: __unk_vfn_49
-    virtual void __unk_vfn_49();
-
-    // vIndex: 50, symbol: __unk_vfn_50
-    virtual void __unk_vfn_50();
-
-    // vIndex: 51, symbol: __unk_vfn_51
-    virtual void __unk_vfn_51();
+    // vIndex: 54, symbol: __unk_vfn_54
+    virtual void __unk_vfn_54();
 
     // vIndex: 55, symbol: __unk_vfn_55
     virtual void __unk_vfn_55();
 
-    // vIndex: 61, symbol: __unk_vfn_61
-    virtual void __unk_vfn_61();
-
-    // vIndex: 62, symbol: __unk_vfn_62
-    virtual void __unk_vfn_62();
-
-    // vIndex: 63, symbol: ?canContainLiquid@LiquidBlock@@UEBA_NXZ
+    // vIndex: 56, symbol: ?canContainLiquid@LiquidBlock@@UEBA_NXZ
     virtual bool canContainLiquid() const;
 
-    // vIndex: 70, symbol: ?checkIsPathable@LiquidBlock@@UEBA_NAEAVActor@@AEBVBlockPos@@1@Z
-    virtual bool checkIsPathable(class Actor&, class BlockPos const&, class BlockPos const&) const;
+    // vIndex: 61, symbol: ?checkIsPathable@LiquidBlock@@UEBA_NAEAVActor@@AEBVBlockPos@@1@Z
+    virtual bool
+    checkIsPathable(class Actor& entity, class BlockPos const& lastPathPos, class BlockPos const& pathPos) const;
 
-    // vIndex: 76, symbol: __unk_vfn_76
-    virtual void __unk_vfn_76();
+    // vIndex: 67, symbol: __unk_vfn_67
+    virtual void __unk_vfn_67();
 
-    // vIndex: 83, symbol: __unk_vfn_83
-    virtual void __unk_vfn_83();
+    // vIndex: 74, symbol: __unk_vfn_74
+    virtual void __unk_vfn_74();
 
-    // vIndex: 91, symbol: ?mayPick@LiquidBlock@@UEBA_NAEBVBlockSource@@AEBVBlock@@_N@Z
-    virtual bool mayPick(class BlockSource const&, class Block const&, bool) const;
+    // vIndex: 83, symbol: ?mayPick@LiquidBlock@@UEBA_NAEBVBlockSource@@AEBVBlock@@_N@Z
+    virtual bool mayPick(class BlockSource const& region, class Block const& block, bool liquid) const;
 
-    // vIndex: 100, symbol: ?neighborChanged@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@1@Z
-    virtual void neighborChanged(class BlockSource&, class BlockPos const&, class BlockPos const&) const;
+    // vIndex: 92, symbol: ?neighborChanged@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@1@Z
+    virtual void
+    neighborChanged(class BlockSource& region, class BlockPos const& pos, class BlockPos const& neighborPos) const;
 
-    // vIndex: 106, symbol: __unk_vfn_106
-    virtual void __unk_vfn_106();
+    // vIndex: 109, symbol: __unk_vfn_109
+    virtual void __unk_vfn_109();
 
-    // vIndex: 122, symbol: __unk_vfn_122
-    virtual void __unk_vfn_122();
+    // vIndex: 110, symbol: __unk_vfn_110
+    virtual void __unk_vfn_110();
 
-    // vIndex: 123, symbol: __unk_vfn_123
-    virtual void __unk_vfn_123();
+    // vIndex: 111, symbol: __unk_vfn_111
+    virtual void __unk_vfn_111();
 
-    // vIndex: 124, symbol: __unk_vfn_124
-    virtual void __unk_vfn_124();
+    // vIndex: 114, symbol: __unk_vfn_114
+    virtual void __unk_vfn_114();
 
-    // vIndex: 127, symbol: __unk_vfn_127
-    virtual void __unk_vfn_127();
+    // vIndex: 117, symbol: __unk_vfn_117
+    virtual void __unk_vfn_117();
 
-    // vIndex: 130, symbol: __unk_vfn_130
-    virtual void __unk_vfn_130();
+    // vIndex: 121, symbol: ?getColor@LiquidBlock@@UEBAHAEBVBlock@@@Z
+    virtual int getColor(class Block const& block) const;
 
-    // vIndex: 134, symbol: ?getColor@LiquidBlock@@UEBAHAEBVBlock@@@Z
-    virtual int getColor(class Block const&) const;
+    // vIndex: 123, symbol: ?getColorAtPos@LiquidBlock@@UEBAHAEAVBlockSource@@AEBVBlockPos@@@Z
+    virtual int getColorAtPos(class BlockSource& region, class BlockPos const& pos) const;
 
-    // vIndex: 136, symbol: ?getColorAtPos@LiquidBlock@@UEBAHAEAVBlockSource@@AEBVBlockPos@@@Z
-    virtual int getColorAtPos(class BlockSource&, class BlockPos const&) const;
+    // vIndex: 126, symbol: ?onGraphicsModeChanged@LiquidBlock@@UEAAXAEBUBlockGraphicsModeChangeContext@@@Z
+    virtual void onGraphicsModeChanged(struct BlockGraphicsModeChangeContext const& context);
 
-    // vIndex: 139, symbol: ?onGraphicsModeChanged@LiquidBlock@@UEAAXAEBUBlockGraphicsModeChangeContext@@@Z
-    virtual void onGraphicsModeChanged(struct BlockGraphicsModeChangeContext const&);
-
-    // vIndex: 147, symbol: ?animateTickBedrockLegacy@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@AEAVRandom@@@Z
+    // vIndex: 134, symbol: ?animateTickBedrockLegacy@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@AEAVRandom@@@Z
     virtual void animateTickBedrockLegacy(class BlockSource&, class BlockPos const&, class Random&) const;
 
-    // vIndex: 153, symbol: __unk_vfn_153
-    virtual void __unk_vfn_153();
+    // vIndex: 138, symbol: __unk_vfn_138
+    virtual void __unk_vfn_138();
 
-    // vIndex: 162, symbol: __unk_vfn_162
-    virtual void __unk_vfn_162();
+    // vIndex: 147, symbol: ?onPlace@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@@Z
+    virtual void onPlace(class BlockSource& region, class BlockPos const& pos) const;
 
-    // vIndex: 163, symbol: __unk_vfn_163
-    virtual void __unk_vfn_163();
+    // vIndex: 149, symbol: __unk_vfn_149
+    virtual void __unk_vfn_149();
 
-    // vIndex: 164, symbol: __unk_vfn_164
-    virtual void __unk_vfn_164();
+    // vIndex: 152, symbol: __unk_vfn_152
+    virtual void __unk_vfn_152();
 
-    // vIndex: 165, symbol: ?onPlace@LiquidBlock@@UEBAXAEAVBlockSource@@AEBVBlockPos@@@Z
-    virtual void onPlace(class BlockSource&, class BlockPos const&) const;
+    // vIndex: 155, symbol: __unk_vfn_155
+    virtual void __unk_vfn_155();
 
-    // vIndex: 167, symbol: __unk_vfn_167
-    virtual void __unk_vfn_167();
+    // vIndex: 162, symbol: ?getMapColor@LiquidBlock@@UEBA?AVColor@mce@@AEAVBlockSource@@AEBVBlockPos@@AEBVBlock@@@Z
+    virtual class mce::Color
+    getMapColor(class BlockSource& region, class BlockPos const& pos, class Block const& block) const;
 
-    // vIndex: 171, symbol: __unk_vfn_171
-    virtual void __unk_vfn_171();
-
-    // vIndex: 174, symbol: __unk_vfn_174
-    virtual void __unk_vfn_174();
-
-    // vIndex: 182, symbol: ?getMapColor@LiquidBlock@@UEBA?AVColor@mce@@AEAVBlockSource@@AEBVBlockPos@@AEBVBlock@@@Z
-    virtual class mce::Color getMapColor(class BlockSource&, class BlockPos const&, class Block const&) const;
-
-    // vIndex: 183, symbol: __unk_vfn_183
-    virtual void __unk_vfn_183();
-
-    // vIndex: 186, symbol: ?getResourceCount@LiquidBlock@@UEBAHAEAVRandomize@@AEBVBlock@@H@Z
+    // vIndex: 165, symbol: ?getResourceCount@LiquidBlock@@UEBAHAEAVRandomize@@AEBVBlock@@H@Z
     virtual int getResourceCount(class Randomize&, class Block const&, int) const;
 
     // symbol: ?canBeSilkTouched@LiquidBlock@@UEBA_NXZ
     MCVAPI bool canBeSilkTouched() const;
 
     // symbol: ??0LiquidBlock@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HAEBVMaterial@@@Z
-    MCAPI LiquidBlock(std::string const&, int, class Material const&);
+    MCAPI LiquidBlock(std::string const& nameId, int id, class Material const& material);
 
     // symbol: ?getTickDelay@LiquidBlock@@QEBAHAEAVBlockSource@@@Z
-    MCAPI int getTickDelay(class BlockSource&) const;
+    MCAPI int getTickDelay(class BlockSource& region) const;
 
     // symbol: ?getHeightFromDepth@LiquidBlock@@SAMH@Z
-    MCAPI static float getHeightFromDepth(int);
+    MCAPI static float getHeightFromDepth(int depth);
 
     // symbol: ?handleEntityInside@LiquidBlock@@SAXAEBVIConstBlockSource@@AEBVBlockPos@@AEAVVec3@@AEBVMaterial@@@Z
-    MCAPI static void
-    handleEntityInside(class IConstBlockSource const&, class BlockPos const&, class Vec3&, class Material const&);
+    MCAPI static void handleEntityInside(
+        class IConstBlockSource const& region,
+        class BlockPos const&          pos,
+        class Vec3&                    current,
+        class Material const&          material
+    );
 
     // NOLINTEND
 
     // protected:
     // NOLINTBEGIN
     // symbol: ?emitFizzParticle@LiquidBlock@@IEBAXAEAVBlockSource@@AEBVBlockPos@@@Z
-    MCAPI void emitFizzParticle(class BlockSource&, class BlockPos const&) const;
+    MCAPI void emitFizzParticle(class BlockSource& region, class BlockPos const& p) const;
 
     // symbol: ?solidify@LiquidBlock@@IEBAXAEAVBlockSource@@AEBVBlockPos@@1@Z
-    MCAPI void solidify(class BlockSource&, class BlockPos const&, class BlockPos const&) const;
+    MCAPI void
+    solidify(class BlockSource& region, class BlockPos const& pos, class BlockPos const& changedNeighbor) const;
 
     // symbol: ?trySpreadFire@LiquidBlock@@IEBAXAEAVBlockSource@@AEBVBlockPos@@AEAVRandom@@@Z
-    MCAPI void trySpreadFire(class BlockSource&, class BlockPos const&, class Random&) const;
+    MCAPI void trySpreadFire(class BlockSource& region, class BlockPos const& pos, class Random& random) const;
 
     // symbol: ?getDepth@LiquidBlock@@KAHAEBVIConstBlockSource@@AEBVBlockPos@@AEBVMaterial@@@Z
-    MCAPI static int getDepth(class IConstBlockSource const&, class BlockPos const&, class Material const&);
+    MCAPI static int
+    getDepth(class IConstBlockSource const& region, class BlockPos const& pos, class Material const& material);
 
     // symbol: ?getRenderedDepth@LiquidBlock@@KAHAEBVIConstBlockSource@@AEBVBlockPos@@AEBVMaterial@@@Z
-    MCAPI static int getRenderedDepth(class IConstBlockSource const&, class BlockPos const&, class Material const&);
+    MCAPI static int
+    getRenderedDepth(class IConstBlockSource const& region, class BlockPos const& pos, class Material const& material);
 
     // NOLINTEND
 
     // private:
     // NOLINTBEGIN
     // symbol: ?_solidify@LiquidBlock@@AEBAXAEAVBlockSource@@AEBVBlockPos@@1@Z
-    MCAPI void _solidify(class BlockSource&, class BlockPos const&, class BlockPos const&) const;
+    MCAPI void
+    _solidify(class BlockSource& region, class BlockPos const& pos, class BlockPos const& changedNeighbor) const;
 
     // symbol: ?_getFlow@LiquidBlock@@CA?AVVec3@@AEBVIConstBlockSource@@AEBVBlockPos@@AEBVMaterial@@@Z
-    MCAPI static class Vec3 _getFlow(class IConstBlockSource const&, class BlockPos const&, class Material const&);
+    MCAPI static class Vec3
+    _getFlow(class IConstBlockSource const& region, class BlockPos const& pos, class Material const& material);
 
     // NOLINTEND
 };

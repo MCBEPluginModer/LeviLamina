@@ -25,10 +25,10 @@ public:
     virtual bool isSerializable() const;
 
     // symbol: ??0InstantaneousAttributeBuff@@QEAA@MAEBVActorDamageSource@@@Z
-    MCAPI InstantaneousAttributeBuff(float, class ActorDamageSource const&);
+    MCAPI InstantaneousAttributeBuff(float amount, class ActorDamageSource const& source);
 
     // symbol: ??0InstantaneousAttributeBuff@@QEAA@MW4AttributeBuffType@@@Z
-    MCAPI InstantaneousAttributeBuff(float, ::AttributeBuffType);
+    MCAPI InstantaneousAttributeBuff(float amount, ::AttributeBuffType type);
 
     // NOLINTEND
 };

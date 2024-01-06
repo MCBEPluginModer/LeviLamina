@@ -49,7 +49,7 @@ public:
 public:
     // NOLINTBEGIN
     // symbol: ??0RakPeerHelper@@QEAA@AEAVIPSupportInterface@0@@Z
-    MCAPI explicit RakPeerHelper(class RakPeerHelper::IPSupportInterface&);
+    MCAPI explicit RakPeerHelper(class RakPeerHelper::IPSupportInterface& ipInterface);
 
     // symbol: ?getIPv4ConnectionIndex@RakPeerHelper@@QEBAHXZ
     MCAPI int getIPv4ConnectionIndex() const;
@@ -65,8 +65,11 @@ public:
 
     // symbol:
     // ?peerStartup@RakPeerHelper@@QEAA?AW4StartupResult@RakNet@@PEAVRakPeerInterface@3@AEBUConnectionDefinition@@W4PeerPurpose@1@@Z
-    MCAPI ::RakNet::StartupResult
-    peerStartup(class RakNet::RakPeerInterface*, struct ConnectionDefinition const&, ::RakPeerHelper::PeerPurpose);
+    MCAPI ::RakNet::StartupResult peerStartup(
+        class RakNet::RakPeerInterface*,
+        struct ConnectionDefinition const& definition,
+        ::RakPeerHelper::PeerPurpose       purpose
+    );
 
     // symbol: ?reset@RakPeerHelper@@QEAAXXZ
     MCAPI void reset();
@@ -76,19 +79,19 @@ public:
     // private:
     // NOLINTBEGIN
     // symbol: ?LogIPSupport@RakPeerHelper@@AEAAXW4PeerPurpose@1@@Z
-    MCAPI void LogIPSupport(::RakPeerHelper::PeerPurpose);
+    MCAPI void LogIPSupport(::RakPeerHelper::PeerPurpose purpose);
 
     // symbol: ?_resetToIPv6Only@RakPeerHelper@@AEAAXV?$span@USocketDescriptor@RakNet@@$01@gsl@@AEAH@Z
-    MCAPI void _resetToIPv6Only(gsl::span<struct RakNet::SocketDescriptor, 2>, int&);
+    MCAPI void _resetToIPv6Only(gsl::span<struct RakNet::SocketDescriptor, 2> sockets, int& socketCount);
 
     // symbol:
     // ?_startupInternal@RakPeerHelper@@AEAA?AW4StartupResult@RakNet@@V?$not_null@PEAVRakPeerInterface@RakNet@@@gsl@@AEBUConnectionDefinition@@PEAUSocketDescriptor@3@AEAHH@Z
     MCAPI ::RakNet::StartupResult _startupInternal(
-        gsl::not_null<class RakNet::RakPeerInterface*>,
-        struct ConnectionDefinition const&,
-        struct RakNet::SocketDescriptor*,
-        int&,
-        int
+        gsl::not_null<class RakNet::RakPeerInterface*> peer,
+        struct ConnectionDefinition const&             definition,
+        struct RakNet::SocketDescriptor*               sockets,
+        int&                                           socketCount,
+        int                                            ipv6Index
     );
 
     // NOLINTEND

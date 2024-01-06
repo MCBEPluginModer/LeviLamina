@@ -3,12 +3,12 @@
 #include <filesystem>
 #include <utility>
 
-#include "ll/api/event/Emitter.h"
 #include "ll/api/event/Event.h"
 #include "ll/api/event/Listener.h"
+#include "ll/api/utils/StringUtils.h"
 
 namespace ll::event {
-namespace fs{
+inline namespace fs {
 enum class FileActionType {
     Added = 1,
     Removed,
@@ -18,49 +18,58 @@ enum class FileActionType {
 };
 
 class FileActionEvent : public Event {
+    std::filesystem::path const& mPath;
+    FileActionType const&        mType;
+
 public:
-    std::filesystem::path const path;
-    FileActionType const        type;
+    constexpr FileActionEvent(std::filesystem::path const& p, FileActionType const& e) : mPath(p), mType(e) {}
 
-    FileActionEvent(std::filesystem::path p, FileActionType e) : path(std::move(p)), type(e) {}
+    LLAPI void serialize(CompoundTag&) const override;
 
-    LLNDAPI static std::unique_ptr<EmitterBase> emitterFactory(ListenerBase&);
+    LLNDAPI std::filesystem::path const& path() const;
+    LLNDAPI FileActionType const&        type() const;
 };
-} // namespace
+} // namespace fs
 
 template <>
 class Listener<fs::FileActionEvent> : public ListenerBase {
     friend fs::FileActionEvent;
 
 public:
-    using EventType = fs::FileActionEvent;
-    using Callback  = std::function<void(EventType&)>;
+    std::string path;
 
-    explicit Listener(std::string const& path, Callback fn, EventPriority priority = EventPriority::Normal)
-    : ListenerBase(priority),
-      callback(std::move(fn)),
-      path(path) {
-        nativeId.assign(event::getEventId<EventType>.name);
+    using event_type  = fs::FileActionEvent;
+    using callback_fn = std::function<void(event_type&)>;
+
+    explicit Listener(
+        std::filesystem::path const&  path,
+        callback_fn                   fn,
+        EventPriority                 priority = EventPriority::Normal,
+        std::weak_ptr<plugin::Plugin> plugin   = plugin::NativePlugin::current()
+    )
+    : ListenerBase(priority, std::move(plugin)),
+      path(string_utils::u8str2str(path.u8string())),
+      callback(std::move(fn)) {
+        nativeId.assign(event::getEventId<event_type>.name);
         nativeId += "|";
-        nativeId += path;
+        nativeId += this->path;
     }
 
     [[nodiscard]] EventId getEventId() const { return EventId{nativeId}; }
 
     ~Listener() override = default;
 
-    void call(Event& event) override { callback(static_cast<EventType&>(event)); }
+    void call(Event& event) override { callback(static_cast<event_type&>(event)); }
 
-    EventId factoryId(EventId) const override { return event::getEventId<EventType>; }
+    [[nodiscard]] EventId factoryId(EventId) const override { return event::getEventId<event_type>; }
 
     static std::shared_ptr<Listener>
-    create(std::string const& path, Callback const& fn, EventPriority priority = EventPriority::Normal) {
+    create(std::filesystem::path const& path, callback_fn const& fn, EventPriority priority = EventPriority::Normal) {
         return std::make_shared<Listener>(path, fn, priority);
     }
 
 private:
-    Callback    callback;
-    std::string path;
+    callback_fn callback;
     std::string nativeId;
 };
 } // namespace ll::event

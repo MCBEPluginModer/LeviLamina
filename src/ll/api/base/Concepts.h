@@ -4,6 +4,10 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <xutility>
+
+#include "ll/api/base/Macro.h"
+#include "ll/api/base/StdInt.h"
 
 namespace ll::concepts {
 
@@ -25,8 +29,15 @@ struct is_all_same : std::bool_constant<is_all_same_v<T, Ts...>> {};
 template <class T, class... Ts>
 concept IsAllSame = is_all_same_v<T, Ts...>;
 
-template <class T, class... Ts>
-static constexpr bool is_string_v = std::convertible_to<T, std::string_view>;
+template <class T>
+static constexpr bool is_string_v = std::is_constructible_v<std::string, T>;
+
+template <class T>
+constexpr bool is_non_char_integral_v =
+    is_one_of_v<std::remove_cv_t<T>, bool, schar, uchar, short, ushort, int, uint, long, ulong, int64, uint64>;
+
+template <class T>
+concept IsNonCharIntegral = is_non_char_integral_v<T>;
 
 template <class T>
 concept IsString = is_string_v<T>;
@@ -69,6 +80,19 @@ concept Associative = Rangeable<T> && requires {
 };
 
 template <class T>
+concept IsDispatcher = requires(T t) {
+    typename std::remove_cvref_t<T>::storage_type;
+    typename std::remove_cvref_t<T>::listener_type;
+    t.storage;
+    t.call();
+};
+
+struct LL_EBO VectorBaseTag {};
+
+template <typename T>
+concept IsVectorBase = std::is_base_of_v<VectorBaseTag, T>;
+
+template <class T>
 concept TupleLike = !Rangeable<T> && requires(T t) {
     std::tuple_size<std::remove_cvref_t<T>>::value;
     std::get<0>(t);
@@ -89,12 +113,24 @@ struct is_specialization_of : std::bool_constant<is_specialization_of_v<T, Z>> {
 template <class T, template <class...> class Z>
 concept Specializes = is_specialization_of_v<T, Z>;
 
-template <class>
+template <template <class...> class T, class... Ts>
+void DerivedFromSpecializationImpl(const T<Ts...>&);
+
+template <class T, template <class...> class Z>
+concept DerivedFromSpecializes = requires(T const& t) { DerivedFromSpecializationImpl<Z>(t); };
+
+template <class T, template <class...> class Z>
+inline constexpr bool is_derived_from_specialization_of_v = DerivedFromSpecializes<T, Z>;
+
+template <class T, template <class...> class Z>
+struct is_derived_from_specialization_of : std::bool_constant<is_derived_from_specialization_of_v<T, Z>> {};
+
+template <class...>
 inline constexpr bool always_false = false;
 
 template <class T>
 concept Stringable = requires(T t) {
-    { t.toString() } -> std::convertible_to<std::string>;
+    { t.toString() } -> IsString;
 };
 
 } // namespace ll::concepts

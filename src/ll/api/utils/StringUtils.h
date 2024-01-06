@@ -11,7 +11,7 @@
 #include "fmt/color.h"
 #include "fmt/core.h"
 
-namespace ll::utils::string_utils {
+namespace ll::inline utils::string_utils {
 
 // "2021-03-24"  ->  ["2021", "03", "24"]  (use '-' as split pattern)
 [[nodiscard]] constexpr std::vector<std::string_view>
@@ -51,6 +51,22 @@ replaceAll(std::string const& str, std::string_view oldValue, std::string_view n
     replaceAll(ret, oldValue, newValue);
     return ret;
 }
+
+constexpr bool
+replaceContent(std::string& str, std::string_view before, std::string_view after, std::string_view relplaceWith) {
+    auto startOffset = str.find(before);
+    if (startOffset == std::string::npos) return false;
+    startOffset    += before.size();
+    auto endOffset  = after.empty() ? std::string::npos : str.find(after, startOffset);
+    str.replace(startOffset, endOffset - startOffset, relplaceWith);
+    return true;
+}
+
+// use snappy to compress
+LLNDAPI std::string compress(std::string_view);
+
+// use snappy to decompress
+LLNDAPI std::string decompress(std::string_view);
 
 /**
  * @brief Integer to hex string.
@@ -247,4 +263,6 @@ template <class T, auto f>
 [[nodiscard]] inline ldouble svtold(std::string_view str, size_t* idx = nullptr) {
     return svtonum<ldouble, strtof>(str, idx);
 }
-} // namespace ll::utils::string_utils
+LLNDAPI bool strtobool(std::string const&);
+
+} // namespace ll::inline utils::string_utils

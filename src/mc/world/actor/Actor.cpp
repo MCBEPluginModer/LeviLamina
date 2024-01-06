@@ -30,8 +30,6 @@ class EntityContext const& Actor::getEntityContext() const { return ll::memory::
 
 void Actor::refresh() { _sendDirtyActorData(); }
 
-bool Actor::isInstanceOf(ActorType type) const { return ActorClassTree::isInstanceOf(*this, type); }
-
 std::string const& Actor::getTypeName() const { return getActorIdentifier().getCanonicalName(); }
 
 class Vec3 Actor::getFeetPos() const { return CommandUtils::getFeetPos(this); }
@@ -40,16 +38,7 @@ class Vec3 Actor::getHeadPos() const { return getAttachPos(ActorLocation::Head);
 
 class BlockPos Actor::getFeetBlockPos() const { return {CommandUtils::getFeetPos(this)}; }
 
-bool Actor::isSimulatedPlayer() const {
-    // return getEntityContext().contains<FlagComponent<SimulatedPlayerFlag>>();
-    return *(void**)this == LL_RESOLVE_SYMBOL("??_7SimulatedPlayer@@6B@");
-}
-
-bool Actor::isPlayer(bool allowSimulatedPlayer) const {
-    if (allowSimulatedPlayer) { return hasCategory(ActorCategory::Player); }
-    return hasCategory(ActorCategory::Player) && !isSimulatedPlayer();
-}
-bool Actor::isItemActor() const { return hasCategory(ActorCategory::Item); }
+bool Actor::isSimulatedPlayer() const { return getEntityContext().hasComponent<FlagComponent<SimulatedPlayerFlag>>(); }
 
 bool Actor::isOnGround() const { return ActorCollision::isOnGround(getEntityContext()); }
 
@@ -64,8 +53,10 @@ void Actor::stopFire() { OnFireSystem::stopFire(*this); }
 
 float Actor::getPosDeltaPerSecLength() const { return static_cast<float>(getPosDelta().length() * 20.0); }
 
-bool Actor::hurt(float damage, ActorDamageCause cause, optional_ref<Actor> attacker) {
-    if (attacker) { return _hurt(ActorDamageByActorSource(attacker.value(), cause), damage, true, false); }
+bool Actor::hurtByCause(float damage, ActorDamageCause cause, optional_ref<Actor> attacker) {
+    if (attacker) {
+        return _hurt(ActorDamageByActorSource(attacker.value(), cause), damage, true, false);
+    }
     return _hurt(ActorDamageSource(cause), damage, true, false);
 }
 
@@ -78,10 +69,23 @@ class HitResult Actor::traceRay(
     Vec3      origin{getHeadPos()};
     Vec3      rayDir{getViewVector()};
     HitResult result{};
-
+    if (includeBlock) {
+        result = getDimensionBlockSource().clip(
+            origin,
+            origin + rayDir * tMax,
+            true,
+            ShapeType::All,
+            ((static_cast<int>(tMax) + 1) * 2),
+            false,
+            false,
+            nullptr,
+            blockCheckFunction
+        );
+        if (result) {
+            tMax = static_cast<float>((origin - result.mPos).length());
+        }
+    }
     if (includeActor) {
-        auto player = isPlayer() ? static_cast<Player*>(const_cast<Actor*>(this)) : nullptr; // NOLINT
-
         float  resDistance = -1.0f;
         Actor* resActor    = nullptr;
         Vec3   resPos{};
@@ -92,32 +96,13 @@ class HitResult Actor::traceRay(
             origin,
             getAABB(),
             const_cast<Actor*>(this),
-            player,
+            hasCategory(ActorCategory::Player) ? (Player*)(this) : nullptr,
             resDistance,
             resActor,
-            resPos,
-            isPlayer()
+            resPos
         );
-        if (resActor != nullptr) { result = HitResult{origin, rayDir, *resActor, resPos}; }
-    }
-
-    if (includeBlock) {
-        HitResult blockRes{getDimensionBlockSource().clip(
-            origin,
-            origin + rayDir * tMax,
-            true,
-            ShapeType::All,
-            ((static_cast<int>(tMax) + 1) * 2),
-            false,
-            false,
-            nullptr,
-            blockCheckFunction
-        )};
-
-        if (result.mType != HitResultType::Entity
-            || (blockRes.mType == HitResultType::Tile
-                && origin.distanceTo(blockRes.mPos) < origin.distanceTo(result.mPos))) {
-            result = std::move(blockRes);
+        if (resActor != nullptr && resDistance >= 0 && resDistance <= tMax) {
+            result = HitResult{origin, rayDir, *resActor, resPos};
         }
     }
     return result;
@@ -156,17 +141,19 @@ float Actor::quickEvalMolangScript(std::string const& expression) {
     return ExpressionNode(expression).evalAsFloat(getRenderParams());
 }
 
-std::unique_ptr<CompoundTag> Actor::saveToNBT() const {
+std::unique_ptr<CompoundTag> Actor::saveToNbt() const {
     auto res = std::make_unique<CompoundTag>();
 
     bool success = save(*res);
 
-    if (success) { return res; }
+    if (success) {
+        return res;
+    }
     return nullptr;
 }
 
-bool Actor::loadFromNBT(class CompoundTag const& nbt) {
-    bool res = load(nbt, DefaultDataLoadHelper::globalHelper);
+bool Actor::loadFromNbt(class CompoundTag const& nbt) {
+    bool res = load(nbt, defaultDataLoadHelper);
     refresh();
     return res;
 }

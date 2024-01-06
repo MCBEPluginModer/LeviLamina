@@ -3,11 +3,13 @@
 #include "ll/api/utils/StringUtils.h"
 #include "ll/api/utils/WinUtils.h"
 
+#include "mc/world/actor/player/Player.h"
+
 namespace fs = std::filesystem;
 
-using ll::utils::file_utils::u8path;
-using ll::utils::string_utils::splitByPattern;
-using ll::utils::win_utils::getSystemLocaleName;
+using ll::file_utils::u8path;
+using ll::string_utils::splitByPattern;
+using ll::win_utils::getSystemLocaleName;
 
 namespace ll::i18n {
 
@@ -22,7 +24,7 @@ bool findTranslation(
     std::string_view      key,
     std::string_view      localeName,
     std::string_view      localeType,
-    std::string&          dest
+    std::string_view&     dest
 ) {
     if (auto lang = langData.find(localeName); lang != langData.end()) { // If there is a translation for the language
         auto& translations = lang->second;
@@ -46,7 +48,7 @@ bool findTranslation(
     return false;
 }
 
-std::string I18N::get(std::string_view key, std::string localeName) {
+std::string_view I18N::get(std::string_view key, std::string_view localeName) {
     if (localeName.empty()) {
         if (mDefaultLocaleName.empty()) {
             localeName = globalDefaultLocaleName;
@@ -54,8 +56,8 @@ std::string I18N::get(std::string_view key, std::string localeName) {
             localeName = mDefaultLocaleName;
         }
     }
-    auto        localeType = localeName.substr(0, 2);
-    std::string result;
+    auto             localeType = localeName.substr(0, 2);
+    std::string_view result;
     // Try finding the translation in loaded language data
     if (findTranslation(mLangData, key, localeName, localeType, result)) {
         return result;
@@ -81,25 +83,25 @@ std::string I18N::get(std::string_view key, std::string localeName) {
         }
     }
     // Finally, still not found, return the key
-    return std::string{key};
+    return key;
 }
 
 #pragma endregion
 
 #pragma region SingleFileI18N
 
-void SingleFileI18N::load(std::string const& fileName) {
-    this->mFilePath = fileName;
-    if (!fs::exists(fileName)) {
-        fs::create_directories(u8path(fileName).parent_path());
-        std::fstream   file(fileName, std::ios::out | std::ios::app);
+void SingleFileI18N::load(std::filesystem::path const& filePath) {
+    this->mFilePath = filePath;
+    if (!fs::exists(filePath)) {
+        fs::create_directories(filePath.parent_path());
+        std::fstream   file(filePath, std::ios::out | std::ios::app);
         nlohmann::json j = mDefaultLangData;
         file << std::setw(4) << j; // Dump default language data
         file.close();
         mLangData = mDefaultLangData;
         return; // Skip parsing
     }
-    std::fstream   file(fileName, std::ios::in);
+    std::fstream   file(filePath, std::ios::in);
     nlohmann::json j;
     file >> j;
     mLangData = j.get<LangData>();
@@ -126,7 +128,7 @@ void SingleFileI18N::save() {
     file.close();
 }
 
-I18N::Type SingleFileI18N::getType() { return Type::SingleFile; }
+I18N::Type SingleFileI18N::getType() const { return Type::SingleFile; }
 
 #pragma endregion
 
@@ -150,7 +152,7 @@ I18N::SubLangData parseNestedData(nlohmann::json const& j, std::string const& pr
     return data;
 }
 
-void MultiFileI18N::load(std::string const& dirPath) {
+void MultiFileI18N::load(std::filesystem::path const& dirPath) {
     this->mDirPath = dirPath;
     if (!fs::exists(dirPath) || fs::is_empty(dirPath)) {
         if (this->mDefaultLangData.empty()) {
@@ -177,7 +179,7 @@ void MultiFileI18N::save(bool nested) {
     if (!fs::exists(mDirPath)) {
         fs::create_directories(mDirPath);
         for (auto& [lc, lv] : this->mDefaultLangData) {
-            auto         fileName = u8path(mDirPath).append(lc + ".json").wstring();
+            auto         fileName = mDirPath.append(lc + ".json").wstring();
             std::fstream file;
             if (fs::exists(fileName)) {
                 file.open(fileName, std::ios::out | std::ios::ate);
@@ -205,8 +207,10 @@ void MultiFileI18N::save(bool nested) {
     }
 }
 
-I18N::Type MultiFileI18N::getType() { return Type::MultiFile; }
+I18N::Type MultiFileI18N::getType() const { return Type::MultiFile; }
 
 #pragma endregion
-
+namespace detail {
+LLNDAPI std::string getPlayerLocale(Player const& player) { return player.getLocaleName(); }
+} // namespace detail
 } // namespace ll::i18n

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mc/_HeaderOutputPredefine.h"
+#include "mc/world/ActorUniqueID.h"
 
 // auto generated inclusion list
 #include "mc/enums/AbilitiesIndex.h"
@@ -15,12 +16,12 @@ namespace Json { class Value; }
 namespace mce { class UUID; }
 // clang-format on
 
+class Level;
+
 class PlayerCommandOrigin : public ::CommandOrigin {
 public:
-    // prevent constructor by default
-    PlayerCommandOrigin& operator=(PlayerCommandOrigin const&);
-    PlayerCommandOrigin(PlayerCommandOrigin const&);
-    PlayerCommandOrigin();
+    ActorUniqueID mPlayerId;
+    Level*        mLevel;
 
 public:
     // NOLINTBEGIN
@@ -67,7 +68,7 @@ public:
     virtual std::optional<class Vec3> getCursorHitPos() const;
 
     // vIndex: 15, symbol: ?canUseAbility@PlayerCommandOrigin@@UEBA_NW4AbilitiesIndex@@@Z
-    virtual bool canUseAbility(::AbilitiesIndex) const;
+    virtual bool canUseAbility(::AbilitiesIndex abilityIndex) const;
 
     // vIndex: 18, symbol: ?isSelectorExpansionAllowed@PlayerCommandOrigin@@UEBA_NXZ
     virtual bool isSelectorExpansionAllowed() const;
@@ -91,7 +92,7 @@ public:
     virtual bool isValid() const;
 
     // symbol: ??0PlayerCommandOrigin@@QEAA@AEAVPlayer@@@Z
-    MCAPI explicit PlayerCommandOrigin(class Player&);
+    MCAPI explicit PlayerCommandOrigin(class Player& origin);
 
     // NOLINTEND
 };

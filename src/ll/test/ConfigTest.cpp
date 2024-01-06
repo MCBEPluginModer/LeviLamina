@@ -18,16 +18,29 @@
 // GameTickScheduler s;
 
 #include "ll/api/utils/WinUtils.h"
+
+#include "mc/nbt/CompoundTag.h"
+#include "mc/server/ServerLevel.h"
 #include "mc/server/commands/standard/FillCommand.h"
 
-template <class T>
+#include "mc/deps/core/mce/Color.h"
+#include "mc/deps/core/mce/UUID.h"
 
+#include "mc/math/Vec2.h"
+#include "mc/math/Vec3.h"
+#include "mc/world/level/BlockPos.h"
+#include "mc/world/level/levelgen/structure/BoundingBox.h"
+
+#include "mc/world/actor/DataItem.h"
+
+template <class T>
 class TestClass {
 public:
     struct {
         int   hello = 233;
         float trs   = 0.2f;
     } structure;
+
     class MyPair {
     public:
         std::string typo          = "hellotype";
@@ -49,6 +62,18 @@ public:
         {"key2", {"a new thing", 42}},
         {"key3", {}                 },
     };
+    std::map<mce::UUID, int> bmap = {
+        {{},                  4454556  },
+        {{2, 3},              4366     },
+        {{4, 5},              -63556654},
+        {mce::UUID::random(), -5674236 },
+    };
+
+    Vec2        vec2{};
+    Vec3        vec3{};
+    BlockPos    pos{};
+    BoundingBox box{};
+
     std::tuple<int, bool, float>                       tuple;
     std::pair<std::string_view, MyPair>                pair;
     std::array<int, 5>                                 array{};
@@ -60,6 +85,12 @@ public:
         Benum,
     } hi;
 };
+// LL_AUTO_TYPED_INSTANCE_HOOK(Virtual, HookPriority::Normal, FillCommand, &FillCommand::execute, void, CommandOrigin
+// const&, CommandOutput&) {
+// }
+
+class myTypeList1;
+class myTypeList2;
 
 LL_AUTO_TYPED_INSTANCE_HOOK(
     ConfigTest,
@@ -70,21 +101,47 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
 ) {
     origin();
 
+    auto lock = ll::Logger::lock();
+
+    int s = 1;
+
+    auto sbbbbbb = DataItem::create(1, s);
+
+    ll::logger.debug("DataItem {} {}", typeid(*sbbbbbb).name(), sbbbbbb->getData<int>().value());
+
+
     auto helloReflection = TestClass<int>{};
 
     // ll::config::saveConfig(helloReflection, "plugins/Test/config/testconfig.json");
 
-    ll::logger.debug("0x{:X}", (uintptr_t)ll::memory::resolveIdentifier(&FillCommand::execute));
-    ll::logger.debug("0x{:X}", (uintptr_t)ll::utils::win_utils::getImageRange().data());
+    auto list = ll::string_utils::splitByPattern("structure.trs", ".");
 
-    ll::logger.debug("0x{:X}", (uintptr_t)ll::utils::win_utils::getImageRange().size());
+    // ll::reflection::visit(std::span{list}, helloReflection, [](auto&& a) {
+    //     if constexpr (std::floating_point<std::remove_cvref_t<decltype(a)>>) {
+    //         ll::logger.debug("ll::reflection::visit {} {}", typeid(decltype(a)).name(), a);
+    //     }
+    // });
+
+    ll::logger.debug(
+        "reflection NBT: {}",
+        ll::reflection::serialize<CompoundTagVariant>(helloReflection).toSnbt(SnbtFormat::PrettyConsolePrint)
+    );
+
+    ll::reflection::deserialize(helloReflection, ll::reflection::serialize<CompoundTagVariant>(helloReflection));
+
+    ll::logger.debug("0x{:X}", (uintptr_t)ll::memory::resolveIdentifier(&FillCommand::execute));
+    ll::logger.debug("0x{:X}", (uintptr_t)ll::win_utils::getImageRange().data());
+
+    ll::logger.debug("0x{:X}", (uintptr_t)ll::win_utils::getImageRange().size());
     ll::logger.debug(
         "0x{:X}",
         (uintptr_t)ll::memory::resolveIdentifier(&FillCommand::execute)
-            - (uintptr_t)ll::utils::win_utils::getImageRange("LeviLamina.dll").data()
+            - (uintptr_t)ll::win_utils::getImageRange("LeviLamina.dll").data()
     );
 
     ll::logger.debug("{}", ll::reflection::getRawName<&FillCommand::execute>());
+    ll::logger.debug("{}", ll::reflection::getRawName<&ServerLevel::_subTick>());
+    ll::logger.debug("{}", ll::reflection::getRawName<&ServerLevel::_checkBlockPermutationCap>());
 
     try {
         ll::reflection::deserialize(
@@ -95,9 +152,28 @@ LL_AUTO_TYPED_INSTANCE_HOOK(
         ll::error_info::printCurrentException();
     }
 
-    // ll::logger.debug("{} for load config", ll::config::loadConfig(helloReflection, "plugins/Test/testconfig.json"));
-    // ll::logger.debug("\n{}", ll::reflection::serialize<nlohmann::ordered_json>(helloReflection).dump(4));
+    ll::logger.debug("789\xDB\xFE");
+    ll::logger.debug("789\xDB\xFE");
 
-    ll::logger.debug("789\xDB\xFE");
-    ll::logger.debug("789\xDB\xFE");
+    ll::meta::DynamicTypeList::push_back<myTypeList1, int>();
+    ll::meta::DynamicTypeList::push_back<myTypeList1, float>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
+    ll::meta::DynamicTypeList::push_back<myTypeList2, bool>();
+    ll::meta::DynamicTypeList::push_back<myTypeList2, long>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList2>())>);
+
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList2>())>);
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
+
+    ll::meta::DynamicTypeList::assign<myTypeList1, ll::meta::TypeList<int, bool, long, myTypeList2>>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
+
+    ll::meta::DynamicTypeList::wrap<myTypeList1, std::optional>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
+
+    ll::meta::DynamicTypeList::assign<myTypeList1, ll::meta::TypeList<int, bool, long>>();
+    ll::meta::DynamicTypeList::wrap<myTypeList1, std::add_const_t>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
+    ll::meta::DynamicTypeList::map<myTypeList1, std::add_lvalue_reference>();
+    ll::logger.debug("{}", ll::reflection::type_raw_name_v<decltype(ll::meta::DynamicTypeList::value<myTypeList1>())>);
 }

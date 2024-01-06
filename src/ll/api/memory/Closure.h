@@ -1,7 +1,10 @@
-#include "ll/api/base/Macro.h"
-#include "ll/api/base/StdInt.h"
+#pragma once
+
 #include <functional>
 #include <memory>
+
+#include "ll/api/base/Macro.h"
+#include "ll/api/base/StdInt.h"
 
 namespace ll::memory {
 namespace detail {
@@ -54,29 +57,34 @@ class NativeClosure {
     static inline Ret closureImpl(Args... args) {
         volatile uintptr_t data   = detail::closureMagicNumber;
         auto               stored = (PackedData*)data;
-        return (*stored->func)(stored->data, std::forward<Args>(args)...);
+        return stored->func(stored->data, std::forward<Args>(args)...);
     }
     static inline size_t implOffset  = detail::getVolatileOffset(closureImpl);
     static inline size_t closureSize = implOffset + sizeof(detail::NativeClosurePrologue);
 
 public:
-    using Origin  = Ret(uintptr_t, Args...);
-    using Closure = Ret(Args...);
+    using origin_fn  = Ret(uintptr_t, Args...);
+    using closure_fn = Ret(Args...);
 
     struct PackedData {
-        Origin*   func;
-        uintptr_t data;
+        origin_fn* func;
+        uintptr_t  data;
     } stored;
     ulong                    oldProtectFlags{};
     std::unique_ptr<uchar[]> closure;
 
-    LLAPI NativeClosure(Origin* func, uintptr_t data) : stored({func, data}) {
+    NativeClosure(origin_fn* func, uintptr_t data) : stored({func, data}) {
         detail::initNativeClosure(this, closureImpl, implOffset, closureSize);
     }
 
-    LLAPI Closure* get() const { return (Closure*)closure.get(); }
+    closure_fn* get() const { return (closure_fn*)closure.get(); }
 
-    LLAPI ~NativeClosure() { detail::releaseNativeClosure(this, closureSize); }
+    ~NativeClosure() { detail::releaseNativeClosure(this, closureSize); }
+
+    NativeClosure(NativeClosure&&)                 = delete;
+    NativeClosure(NativeClosure const&)            = delete;
+    NativeClosure& operator=(NativeClosure&&)      = delete;
+    NativeClosure& operator=(NativeClosure const&) = delete;
 };
 template <class Ret, class... Args>
 class FunctionalClosure : public NativeClosure<Ret, Args...> {
@@ -85,10 +93,10 @@ class FunctionalClosure : public NativeClosure<Ret, Args...> {
     }
 
 public:
-    using Closure = Ret(Args...);
-    std::function<Closure> func;
+    using closure = Ret(Args...);
+    std::function<closure> func;
 
-    FunctionalClosure(std::function<Closure> const& func)
+    FunctionalClosure(std::function<closure> const& func)
     : NativeClosure<Ret, Args...>(closureImpl, (uintptr_t)this),
       func(func) {}
 };

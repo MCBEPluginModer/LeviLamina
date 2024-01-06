@@ -35,7 +35,7 @@ public:
     MCAPI TextObjectRoot();
 
     // symbol: ?addChild@TextObjectRoot@@QEAAXV?$unique_ptr@VITextObject@@U?$default_delete@VITextObject@@@std@@@std@@@Z
-    MCAPI void addChild(std::unique_ptr<class ITextObject>);
+    MCAPI void addChild(std::unique_ptr<class ITextObject> childObject);
 
     // symbol:
     // ?asStringVector@TextObjectRoot@@QEBA?AV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@XZ
@@ -48,7 +48,7 @@ public:
     MCAPI bool isEmpty() const;
 
     // symbol: ?resolveRoot@TextObjectRoot@@QEBA?AVResolvedTextObject@@AEBVActor@@AEBVScoreboard@@@Z
-    MCAPI class ResolvedTextObject resolveRoot(class Actor const&, class Scoreboard const&) const;
+    MCAPI class ResolvedTextObject resolveRoot(class Actor const& actor, class Scoreboard const& scoreboard) const;
 
     // NOLINTEND
 };

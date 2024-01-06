@@ -2,14 +2,16 @@
 #include "ll/api/base/Hash.h"
 #include "mc/nbt/CompoundTag.h"
 
+namespace ll::nbt::detail {
 std::optional<CompoundTagVariant> parseSnbtValue(std::string_view& s);
 
 bool isTrivialNbtStringChar(char c) { return isalnum(c) || c == '-' || c == '+' || c == '_' || c == '.'; }
-
+} // namespace ll::nbt::detail
 namespace {
 
 using namespace ll::hash_literals;
 using namespace ll::hash;
+using namespace ll::nbt::detail;
 
 bool scanComment(std::string_view& s) noexcept {
     size_t i = 0;
@@ -77,7 +79,9 @@ bool skipWhitespace(std::string_view& s) {
     scanSpaces(s);
     while (s.front() == '/' || s.front() == '#' || s.front() == ';') {
         s.remove_prefix(1);
-        if (!scanComment(s)) { return false; }
+        if (!scanComment(s)) {
+            return false;
+        }
         scanSpaces(s);
     }
     return true;
@@ -97,9 +101,13 @@ std::optional<ldouble> stold(std::string_view const& s, size_t& n) {
     errnoRef          = 0;
     const ldouble res = strtold(ptr, &eptr);
 
-    if (ptr == eptr) { return std::nullopt; }
+    if (ptr == eptr) {
+        return std::nullopt;
+    }
 
-    if (errnoRef == ERANGE) { return std::nullopt; }
+    if (errnoRef == ERANGE) {
+        return std::nullopt;
+    }
 
     n = static_cast<size_t>(eptr - ptr);
 
@@ -120,7 +128,9 @@ std::optional<CompoundTagVariant> parseNumber(std::string_view& s) {
     bool isInt = true;
 
     for (size_t i = 0; i < n; i++) {
-        if (!std::isxdigit(s[i]) && s[i] != '-') { isInt = false; }
+        if (!std::isxdigit(s[i]) && s[i] != '-') {
+            isInt = false;
+        }
     }
 
     s.remove_prefix(n);
@@ -216,9 +226,11 @@ std::optional<std::string> parseString(std::string_view& s) {
 
     char starts = s.front();
 
-    if (starts != '\"' && starts != '\'' && !isTrivialNbtStringChar(starts)) { return std::nullopt; }
+    if (starts != '\"' && starts != '\'' && !isTrivialNbtStringChar(starts)) {
+        return std::nullopt;
+    }
 
-    auto res = std::vector<char>{};
+    std::string res;
 
     if (starts == '\"' || starts == '\'') {
         s.remove_prefix(1);
@@ -229,7 +241,7 @@ std::optional<std::string> parseString(std::string_view& s) {
                 s.remove_prefix(1);
                 res.push_back(fc);
             } else {
-                return std::string{res.begin(), res.end()};
+                return res;
             }
         }
     }
@@ -244,16 +256,17 @@ std::optional<std::string> parseString(std::string_view& s) {
         // closing quote
         case '\"': {
             if (starts == '\"') {
-                auto ans = std::string{res.begin(), res.end()};
-
-                if (s.starts_with(" /*BASE64*/")) { return ll::base64::decode(ans); }
-
-                return ans;
+                if (s.starts_with(" /*BASE64*/")) {
+                    return ll::base64::decode(res);
+                }
+                return res;
             }
             res.push_back('\"');
         } break;
         case '\'': {
-            if (starts == '\'') { return std::string{res.begin(), res.end()}; }
+            if (starts == '\'') {
+                return res;
+            }
             res.push_back('\'');
         } break;
 
@@ -263,7 +276,9 @@ std::optional<std::string> parseString(std::string_view& s) {
             // multiline string
             case '\n':
             case '\r':
-                if (!skipWhitespace(s)) { return std::nullopt; }
+                if (!skipWhitespace(s)) {
+                    return std::nullopt;
+                }
                 break;
 
             // quotation mark
@@ -320,7 +335,9 @@ std::optional<std::string> parseString(std::string_view& s) {
                 const int codepoint1 = get_codepoint(s);
                 int       codepoint  = codepoint1; // start with codepoint1
 
-                if (codepoint1 == -1) { return std::nullopt; }
+                if (codepoint1 == -1) {
+                    return std::nullopt;
+                }
 
                 // check if code point is a high surrogate
                 if (0xD800 <= codepoint1 && codepoint1 <= 0xDBFF) {
@@ -328,7 +345,9 @@ std::optional<std::string> parseString(std::string_view& s) {
                     if (get(s) == '\\' && get(s) == 'u') {
                         const int codepoint2 = get_codepoint(s);
 
-                        if (codepoint2 == -1) { return std::nullopt; }
+                        if (codepoint2 == -1) {
+                            return std::nullopt;
+                        }
 
                         // check if codepoint2 is a low surrogate
                         if ((0xDC00 <= codepoint2 && codepoint2 <= 0xDFFF)) {
@@ -350,7 +369,9 @@ std::optional<std::string> parseString(std::string_view& s) {
                         return std::nullopt;
                     }
                 } else {
-                    if (0xDC00 <= codepoint1 && codepoint1 <= 0xDFFF) { return std::nullopt; }
+                    if (0xDC00 <= codepoint1 && codepoint1 <= 0xDFFF) {
+                        return std::nullopt;
+                    }
                 }
 
                 // translate codepoint into bytes
@@ -390,26 +411,36 @@ std::optional<std::string> parseString(std::string_view& s) {
 
 
 std::optional<ByteArrayTag> parseByteArray(std::string_view& s) {
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
-    if (s.front() == ']') { return ByteArrayTag{}; }
+    if (s.front() == ']') {
+        return ByteArrayTag{};
+    }
 
     auto res = std::vector<schar>{};
     res.clear();
 
     while (!s.empty()) {
 
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
         if (s.front() == ']') {
             s.remove_prefix(1);
             return res;
         }
         auto value = parseNumber(s);
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
 
-        if (!value || !value.value().hold<ByteTag>()) { return std::nullopt; }
+        if (!value || !(*value).hold<ByteTag>()) {
+            return std::nullopt;
+        }
 
-        res.emplace_back(value.value().get<ByteTag>());
+        res.emplace_back((*value).get<ByteTag>());
 
         switch (s.front()) {
         case ']':
@@ -426,26 +457,36 @@ std::optional<ByteArrayTag> parseByteArray(std::string_view& s) {
 }
 
 std::optional<IntArrayTag> parseIntArray(std::string_view& s) {
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
-    if (s.front() == ']') { return IntArrayTag{}; }
+    if (s.front() == ']') {
+        return IntArrayTag{};
+    }
 
     auto res = std::vector<int>{};
     res.clear();
 
     while (!s.empty()) {
 
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
         if (s.front() == ']') {
             s.remove_prefix(1);
             return res;
         }
         auto value = parseNumber(s);
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
 
-        if (!value || !value.value().hold<IntTag>()) { return std::nullopt; }
+        if (!value || !(*value).hold<IntTag>()) {
+            return std::nullopt;
+        }
 
-        res.emplace_back(value.value().get<IntTag>());
+        res.emplace_back((*value).get<IntTag>());
 
         switch (s.front()) {
         case ']':
@@ -461,47 +502,117 @@ std::optional<IntArrayTag> parseIntArray(std::string_view& s) {
     return std::nullopt;
 }
 
+std::optional<ByteArrayTag> parseLongArray(std::string_view& s) {
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
+
+    if (s.front() == ']') {
+        return ByteArrayTag{};
+    }
+
+    auto res = std::vector<int64>{};
+    res.clear();
+
+    while (!s.empty()) {
+
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
+        if (s.front() == ']') {
+            s.remove_prefix(1);
+            return ByteArrayTag{std::in_place_type<int64>, std::span{res}};
+        }
+        auto value = parseNumber(s);
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
+
+        if (!value || !(*value).hold<Int64Tag>()) {
+            return std::nullopt;
+        }
+
+        res.emplace_back((*value).get<Int64Tag>());
+
+        switch (s.front()) {
+        case ']':
+            s.remove_prefix(1);
+            return ByteArrayTag{std::in_place_type<int64>, std::span{res}};
+        case ',':
+            s.remove_prefix(1);
+        default:
+            break;
+        }
+    }
+
+    return std::nullopt;
+}
+
 std::optional<CompoundTagVariant> parseList(std::string_view& s) {
     if (s.starts_with("[B;")) {
         s.remove_prefix(3);
-        if (auto array = parseByteArray(s); array) { return array.value(); }
+        if (auto array = parseByteArray(s); array) {
+            return *array;
+        }
         return std::nullopt;
     } else if (s.starts_with("[I;")) {
         s.remove_prefix(3);
-        if (auto array = parseIntArray(s); array) { return array.value(); }
+        if (auto array = parseIntArray(s); array) {
+            return *array;
+        }
+        return std::nullopt;
+    } else if (s.starts_with("[L;")) {
+        s.remove_prefix(3);
+        if (auto array = parseLongArray(s); array) {
+            return *array;
+        }
         return std::nullopt;
     } else if (s.starts_with("[ /*B;*/")) {
         s.remove_prefix(8);
-        if (auto array = parseByteArray(s); array) { return array.value(); }
+        if (auto array = parseByteArray(s); array) {
+            return *array;
+        }
         return std::nullopt;
     } else if (s.starts_with("[ /*I;*/")) {
         s.remove_prefix(8);
-        if (auto array = parseIntArray(s); array) { return array.value(); }
+        if (auto array = parseIntArray(s); array) {
+            return *array;
+        }
+        return std::nullopt;
+    } else if (s.starts_with("[ /*L;*/")) {
+        s.remove_prefix(8);
+        if (auto array = parseLongArray(s); array) {
+            return *array;
+        }
         return std::nullopt;
     }
     get(s);
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
-    if (s.front() == ']') { return ListTag{}; }
+    if (s.front() == ']') {
+        return ListTag{};
+    }
 
-    auto res  = ListTag{};
-    res.mType = Tag::Type::End;
+    auto res = ListTag{};
     res.mList.clear();
 
-    auto& type = res.mType;
+    bool settedType = false;
 
     while (!s.empty()) {
 
         auto value = parseSnbtValue(s);
 
-        if (!value) { return res; }
-
-        if (type == Tag::Type::End) {
-            type = value.value().get()->getId();
-        } else if (value.value().get()->getId() != type) {
-            return std::nullopt;
+        if (!value) {
+            return res;
         }
-        res.mList.emplace_back(value.value().toUnique());
+        if (!settedType) {
+            res.mType  = (*value).index();
+            settedType = true;
+        }
+
+        res.mList.emplace_back((*value).toUnique());
 
 
         switch (s.front()) {
@@ -520,7 +631,9 @@ std::optional<CompoundTagVariant> parseList(std::string_view& s) {
 
 std::optional<CompoundTag> parseCompound(std::string_view& s) {
     get(s);
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
     if (s.front() == '}') {
         s.remove_prefix(1);
@@ -528,25 +641,35 @@ std::optional<CompoundTag> parseCompound(std::string_view& s) {
     }
     auto res = CompoundTag{};
     while (!s.empty()) {
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
         if (s.front() == '}') {
             s.remove_prefix(1);
             return res;
         }
         auto key = parseString(s);
 
-        if (!key) { return std::nullopt; }
+        if (!key) {
+            return std::nullopt;
+        }
 
-        if (!skipWhitespace(s)) { return std::nullopt; }
+        if (!skipWhitespace(s)) {
+            return std::nullopt;
+        }
 
         auto p = get(s);
-        if (p != ':' && p != '=') { return std::nullopt; }
+        if (p != ':' && p != '=') {
+            return std::nullopt;
+        }
 
         auto value = parseSnbtValue(s);
 
-        if (!value) { return res; }
+        if (!value) {
+            return res;
+        }
 
-        res[key.value()] = value.value();
+        res[*key] = *value;
 
         switch (s.front()) {
         case '}':
@@ -562,10 +685,12 @@ std::optional<CompoundTag> parseCompound(std::string_view& s) {
     return std::nullopt;
 }
 } // namespace
-
+namespace ll::nbt::detail {
 std::optional<CompoundTagVariant> parseSnbtValue(std::string_view& s) {
 
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
     std::optional<CompoundTagVariant> res = std::nullopt;
 
@@ -591,14 +716,14 @@ std::optional<CompoundTagVariant> parseSnbtValue(std::string_view& s) {
         break;
     case '[':
         if (auto list = parseList(s); list) {
-            res = list.value();
+            res = *list;
             break;
         } else {
             return std::nullopt;
         }
     case '{':
         if (auto compound = parseCompound(s); compound) {
-            res = compound.value();
+            res = *compound;
             break;
         } else {
             return std::nullopt;
@@ -618,11 +743,14 @@ std::optional<CompoundTagVariant> parseSnbtValue(std::string_view& s) {
             s.remove_prefix(4);
             res = EndTag{};
         } else if (auto str = parseString(s); str) {
-            res = StringTag{str.value()};
+            res = StringTag{*str};
         }
     }
 
-    if (!skipWhitespace(s)) { return std::nullopt; }
+    if (!skipWhitespace(s)) {
+        return std::nullopt;
+    }
 
     return res;
 }
+} // namespace ll::nbt::detail

@@ -29,13 +29,16 @@ public:
 
     // vIndex: 7, symbol:
     // ?appendDebugInfo@NearestAttackableTargetGoal@@UEBAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    virtual void appendDebugInfo(std::string&) const;
+    virtual void appendDebugInfo(std::string& str) const;
 
     // vIndex: 11, symbol: ?_findTarget@NearestAttackableTargetGoal@@MEAA?AUActorUniqueID@@PEAPEBUMobDescriptor@@@Z
-    virtual struct ActorUniqueID _findTarget(struct MobDescriptor const**);
+    virtual struct ActorUniqueID _findTarget(struct MobDescriptor const** outMobDescriptor);
 
     // symbol: ??0NearestAttackableTargetGoal@@QEAA@AEAVMob@@@Z
-    MCAPI explicit NearestAttackableTargetGoal(class Mob&);
+    MCAPI explicit NearestAttackableTargetGoal(class Mob& mob);
+
+    // symbol: ?isTargetVisible@NearestAttackableTargetGoal@@QEBA_NAEBVMob@@MM@Z
+    MCAPI bool isTargetVisible(class Mob const&, float, float) const;
 
     // NOLINTEND
 
@@ -46,9 +49,6 @@ public:
 
     // symbol: ?_isTargetInCooldown@NearestAttackableTargetGoal@@IEBA_NAEBUMobDescriptor@@@Z
     MCAPI bool _isTargetInCooldown(struct MobDescriptor const&) const;
-
-    // symbol: ?_isTargetVisible@NearestAttackableTargetGoal@@IEBA_NAEBVMob@@MM@Z
-    MCAPI bool _isTargetVisible(class Mob const&, float, float) const;
 
     // NOLINTEND
 

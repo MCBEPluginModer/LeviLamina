@@ -2,62 +2,59 @@
 
 #include <any>
 #include <filesystem>
-#include <string>
-#include <unordered_map>
 
 #include "ll/api/Logger.h"
 #include "ll/api/base/UnorderedStringMap.h"
-#include "ll/api/base/Version.h"
-#include "ll/api/memory/Memory.h"
 #include "ll/api/plugin/Manifest.h"
-#include "ll/api/plugin/PluginManager.h"
 
 #include "mc/common/wrapper/optional_ref.h"
 
 namespace ll::plugin {
+LLETAPI std::filesystem::path pluginsPath;
 
-enum class PluginState : char {
-    Enabled,
-    Disabled,
-};
-
-class Plugin : public std::enable_shared_from_this<Plugin> {
-private:
-    using Handle              = memory::Handle;
-    using Callback            = std::function<bool(Plugin&)>;
-    using SharedData          = UnorderedStringMap<std::any>;
-    using ll_plugin_load_t    = bool (*)(Plugin&);
-    using ll_plugin_unload_t  = bool (*)(Plugin&);
-    using ll_plugin_enable_t  = bool (*)(Plugin&);
-    using ll_plugin_disable_t = bool (*)(Plugin&);
-
-    friend class PluginManager;
+class PluginManager;
+class Plugin {
+    friend PluginManager;
 
     struct Impl;
     std::unique_ptr<Impl> mImpl;
 
-    explicit Plugin(Manifest manifest, Handle handle);
+public:
+    enum class State {
+        Enabled,
+        Disabled,
+    };
+    using callback_t = bool(Plugin&);
+    using CallbackFn = std::function<callback_t>;
 
-    void setState(PluginState state) const;
+protected:
+    LLAPI void setState(State state) const;
 
-    bool onLoad();
+    LLNDAPI bool hasOnLoad();
+    LLNDAPI bool hasOnUnload();
+    LLNDAPI bool hasOnEnable();
+    LLNDAPI bool hasOnDisable();
 
-    bool onUnload();
+    LLAPI bool onLoad();
+    LLAPI bool onUnload();
+    LLAPI bool onEnable();
+    LLAPI bool onDisable();
 
-    bool onEnable();
-
-    bool onDisable();
+    LLAPI void onLoad(CallbackFn func);
+    LLAPI void onUnload(CallbackFn func);
+    LLAPI void onEnable(CallbackFn func);
+    LLAPI void onDisable(CallbackFn func);
 
 public:
+    LLAPI explicit Plugin(Manifest manifest);
+
     LLAPI ~Plugin();
 
-    LLNDAPI static std::shared_ptr<Plugin> create(Manifest manifest, Handle handle);
+    using SharedData = UnorderedStringMap<std::any>;
 
-    LLNDAPI PluginState getState() const;
+    LLNDAPI State getState() const;
 
     LLNDAPI Manifest const& getManifest() const;
-
-    LLNDAPI Handle getHandle() const;
 
     LLNDAPI SharedData const& getSharedData() const;
 
@@ -70,14 +67,6 @@ public:
     LLNDAPI std::filesystem::path getConfigDir() const;
 
     LLNDAPI Logger& getLogger() const;
-
-    LLAPI void onLoad(Callback func);
-
-    LLAPI void onUnload(Callback func);
-
-    LLAPI void onEnable(Callback func);
-
-    LLAPI void onDisable(Callback func);
 
     bool hasSharedData(std::string_view key) const { return getSharedData().contains(key); }
 
@@ -114,20 +103,5 @@ public:
             getSharedData().erase(it);
         }
     }
-
-    // throw exception if not found
-    [[maybe_unused]] static Plugin& current() {
-        static auto& plugin = []() -> Plugin& {
-            if (auto p = PluginManager::getInstance().findPlugin(memory::getCurrentModuleHandle()).lock()) {
-                return const_cast<Plugin&>(*p);
-            } else {
-                throw std::runtime_error(
-                    "Plugin not found, make sure you are calling this function from a plugin registered properly"
-                );
-            }
-        }();
-        return plugin;
-    }
 };
-
 } // namespace ll::plugin

@@ -25,7 +25,7 @@ public:
     public:
         // NOLINTBEGIN
         // symbol: ??0StateListNode@BlockState@@QEAA@PEAV1@@Z
-        MCAPI explicit StateListNode(class BlockState*);
+        MCAPI explicit StateListNode(class BlockState* state);
 
         // symbol: ??1StateListNode@BlockState@@QEAA@XZ
         MCAPI ~StateListNode();
@@ -52,14 +52,14 @@ public:
     // vIndex: 0, symbol: ??1BlockState@@UEAA@XZ
     virtual ~BlockState();
 
-    // vIndex: 1, symbol: ?toNBT@?$BlockStateVariant@H@@UEBAXAEAVCompoundTag@@H@Z
-    virtual void toNBT(class CompoundTag&, int) const = 0;
+    // vIndex: 1, symbol: ?toNBT@?$BlockStateVariant@_N@@UEBAXAEAVCompoundTag@@H@Z
+    virtual void toNBT(class CompoundTag& tag, int val) const = 0;
 
-    // vIndex: 2, symbol: ?fromNBT@?$BlockStateVariant@H@@UEBA_NAEBVCompoundTag@@AEAH@Z
-    virtual bool fromNBT(class CompoundTag const&, int&) const = 0;
+    // vIndex: 2, symbol: ?fromNBT@?$BlockStateVariant@_N@@UEBA_NAEBVCompoundTag@@AEAH@Z
+    virtual bool fromNBT(class CompoundTag const& tag, int&) const = 0;
 
     // symbol: ?forEachState@BlockState@@SAXV?$function@$$A6A_NAEBVBlockState@@@Z@std@@@Z
-    MCAPI static void forEachState(std::function<bool(class BlockState const&)>);
+    MCAPI static void forEachState(std::function<bool(class BlockState const&)> callback);
 
     // NOLINTEND
 };

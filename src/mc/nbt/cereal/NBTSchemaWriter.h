@@ -103,12 +103,6 @@ public:
     // symbol: ?write@NBTSchemaWriter@@UEAA_N_JAEBUSerializerTraits@cereal@@@Z
     MCVAPI bool write(int64, struct cereal::SerializerTraits const&);
 
-    // symbol: ?write@NBTSchemaWriter@@UEAA_NIAEBUSerializerTraits@cereal@@@Z
-    MCVAPI bool write(uint, struct cereal::SerializerTraits const&);
-
-    // symbol: ?write@NBTSchemaWriter@@UEAA_NHAEBUSerializerTraits@cereal@@@Z
-    MCVAPI bool write(int, struct cereal::SerializerTraits const&);
-
     // symbol: ?write@NBTSchemaWriter@@UEAA_N_NAEBUSerializerTraits@cereal@@@Z
     MCVAPI bool write(bool, struct cereal::SerializerTraits const&);
 
@@ -124,6 +118,12 @@ public:
     // symbol: ?write@NBTSchemaWriter@@UEAA_NFAEBUSerializerTraits@cereal@@@Z
     MCVAPI bool write(short, struct cereal::SerializerTraits const&);
 
+    // symbol: ?write@NBTSchemaWriter@@UEAA_NIAEBUSerializerTraits@cereal@@@Z
+    MCVAPI bool write(uint, struct cereal::SerializerTraits const&);
+
+    // symbol: ?write@NBTSchemaWriter@@UEAA_NHAEBUSerializerTraits@cereal@@@Z
+    MCVAPI bool write(int, struct cereal::SerializerTraits const&);
+
     // symbol: ??0NBTSchemaWriter@@QEAA@XZ
     MCAPI NBTSchemaWriter();
 
@@ -132,7 +132,7 @@ public:
     // private:
     // NOLINTBEGIN
     // symbol: ?_serializeTag@NBTSchemaWriter@@AEAA_NV?$unique_ptr@VTag@@U?$default_delete@VTag@@@std@@@std@@@Z
-    MCAPI bool _serializeTag(std::unique_ptr<class Tag>);
+    MCAPI bool _serializeTag(std::unique_ptr<class Tag> tag);
 
     // NOLINTEND
 };

@@ -41,7 +41,7 @@ public:
 
     // vIndex: 1, symbol:
     // ?onEvent@?$EventListenerDispatcher@VActorEventListener@@@@MEAA?AW4EventResult@@AEBUActorNotificationEvent@@@Z
-    virtual ::EventResult onEvent(struct ActorNotificationEvent const&);
+    virtual ::EventResult onEvent(struct ActorNotificationEvent const& event);
 
     // vIndex: 2, symbol: __unk_vfn_2
     virtual void __unk_vfn_2();
@@ -133,7 +133,10 @@ public:
     // vIndex: 31, symbol: __unk_vfn_31
     virtual void __unk_vfn_31();
 
-    // vIndex: 32, symbol: ?onEvent@DebugInfoComponent@@UEAA?AW4EventResult@@AEBUActorDefinitionTriggeredEvent@@@Z
+    // vIndex: 32, symbol: __unk_vfn_32
+    virtual void __unk_vfn_32();
+
+    // vIndex: 33, symbol: ?onEvent@DebugInfoComponent@@UEAA?AW4EventResult@@AEBUActorDefinitionTriggeredEvent@@@Z
     virtual ::EventResult onEvent(struct ActorDefinitionTriggeredEvent const&);
 
     // symbol: ??0DebugInfoComponent@@QEAA@$$QEAV0@@Z
@@ -143,7 +146,8 @@ public:
     MCAPI DebugInfoComponent(class DebugInfoComponent const&);
 
     // symbol: ?addListener@DebugInfoComponent@@QEAAXAEBVHashedString@@VNetworkIdentifier@@W4SubClientId@@@Z
-    MCAPI void addListener(class HashedString const&, class NetworkIdentifier, ::SubClientId);
+    MCAPI void
+    addListener(class HashedString const& messageType, class NetworkIdentifier source, ::SubClientId subClientId);
 
     // symbol: ?listenersEmpty@DebugInfoComponent@@QEBA_NXZ
     MCAPI bool listenersEmpty() const;
@@ -152,7 +156,8 @@ public:
     MCAPI class DebugInfoComponent& operator=(class DebugInfoComponent&&);
 
     // symbol: ?removeListener@DebugInfoComponent@@QEAAXAEBVHashedString@@VNetworkIdentifier@@W4SubClientId@@@Z
-    MCAPI void removeListener(class HashedString const&, class NetworkIdentifier, ::SubClientId);
+    MCAPI void
+    removeListener(class HashedString const&, class NetworkIdentifier networkIdentifier, ::SubClientId subClientId);
 
     // NOLINTEND
 };
