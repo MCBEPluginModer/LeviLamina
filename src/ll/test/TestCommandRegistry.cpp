@@ -14,7 +14,11 @@
 #include "mc/server/commands/ServerCommands.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/level/Command.h"
-
+#include "ll/api/dimension/CustomDimension.h"
+#include "ll/api/dimension/CustomDimensionConfig.h"
+#include "ll/api/dimension/CustomDimensionManager.h"
+#include "ll/api/dimension/FakeDimensionId.h"
+#include "mc/world/actor/player/Player.h"
 
 class TestCommand : public Command {
     enum Operation : int { List, Install, Uninstall, Enable, Disable };
@@ -28,7 +32,9 @@ class TestCommand : public Command {
 
 
 public:
-    void execute(CommandOrigin const& /*ori*/, CommandOutput& /*output*/) const override {
+    void execute(CommandOrigin const& ori, CommandOutput& output*) const override {
+         CustomDimensionManager::getInstance().AddDimension("test",123,GeneratorType::Overworld);
+        ((Player*)ori.getEntity())->teleport(Vec3(0,100,0),3);
         switch (operation) {
         case Operation::List:
             if (target_isSet || index_isSet) {
