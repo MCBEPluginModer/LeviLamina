@@ -33,7 +33,7 @@ class TestCommand : public Command {
 
 public:
     void execute(CommandOrigin const& ori, CommandOutput& output) const override {
-         auto id = CustomDimensionManager::getInstance().AddDimension("test",123,GeneratorType::Overworld);
+         auto id = CustomDimensionManager::getInstance().AddDimension("test",123,GeneratorType::Void);
         ((Player*)ori.getEntity())->teleport(Vec3(0,100,0),id);
         switch (operation) {
         case Operation::List:
