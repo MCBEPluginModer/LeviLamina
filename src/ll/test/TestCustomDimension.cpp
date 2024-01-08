@@ -6,7 +6,7 @@
 static bool reg = [] {
     using namespace ll::event;
     EventBus::getInstance().emplaceListener<ServerStartedEvent>([](ServerStartedEvent&) {
-        ll::dimension::CustomDimensionManager::getInstance().addDimension("testNewDimension",12345,GeneratorType::Void);
+        ll::dimension::CustomDimensionManager::getInstance().addDimension("testNewDimension",12345,GeneratorType::Nether);
     });
     return true;
 }();
