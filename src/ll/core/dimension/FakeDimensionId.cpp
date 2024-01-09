@@ -44,7 +44,7 @@ static ll::Logger logger("FakeDimensionId");
 namespace CustomDimensionHookList {
 
 namespace sendpackethook {
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     LoopbackPacketSendersendToClientHandler1,
     HookPriority::Normal,
     LoopbackPacketSender,
@@ -63,7 +63,7 @@ LL_TYPED_INSTANCE_HOOK(
     return origin(netId, packet, subId);
 };
 
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     LoopbackPacketSendersendToClientHandler2,
     HookPriority::Normal,
     LoopbackPacketSender,
@@ -81,15 +81,15 @@ LL_TYPED_INSTANCE_HOOK(
         packet = FakeDimensionId::changePacketDimension(packet);
     }
 
-    // 屏蔽死亡回主世界时的改维度包
+    // remove send changeDimensionPacket to client when player die
     if (FakeDimensionId::getInstance().isNeedRemove(uuid) && packet.getId() == MinecraftPacketIds::ChangeDimension) {
         return;
     }
-    // 移除通用事件包。其中，事件id时9801，对应LevelEvent是SleepingPlayers
+    // remove level event packet, event id is 9801, LevelEvent is SleepingPlayers
     if (packet.getId() == MinecraftPacketIds::LevelEventGeneric && FakeDimensionId::getInstance().isNeedRemove(uuid)) {
         return;
     }
-    // 屏蔽死亡回主世界时发送的成功转维度的事件包
+    // remove send changedimension success action packet to client when player die
     if (FakeDimensionId::getInstance().isNeedRemove(uuid) && packet.getId() == MinecraftPacketIds::PlayerAction) {
         auto& actionPacket = (PlayerActionPacket&)packet;
         if (actionPacket.mAction == PlayerActionType::ChangeDimensionAck) {
@@ -99,7 +99,7 @@ LL_TYPED_INSTANCE_HOOK(
     return origin(comp, packet);
 };
 
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     LoopbackPacketSendersendToClientsHandler,
     HookPriority::Normal,
     LoopbackPacketSender,
@@ -125,7 +125,7 @@ LL_TYPED_INSTANCE_HOOK(
 };
 
 // StartGamePacket
-LL_TYPED_STATIC_HOOK(
+LL_TYPE_STATIC_HOOK(
     StartGamePacketHandler,
     HookPriority::Normal,
     StartGamePacket,
@@ -184,7 +184,7 @@ LL_TYPED_STATIC_HOOK(
 }
 
 // ChangeDimensionPacket
-LL_TYPED_STATIC_HOOK(
+LL_TYPE_STATIC_HOOK(
     ChangeDimensionPacketHandler,
     HookPriority::Normal,
     ChangeDimensionPacket,
@@ -195,13 +195,13 @@ LL_TYPED_STATIC_HOOK(
     bool          respawn
 ) {
     if (dimId.id > 2) {
-        dimId.id = 0;
+        dimId.id = FakeDimensionId::fakeDim;
     }
     return origin(dimId, pos, respawn);
 }
 
 // SubChunkPacket and SubChunkRequestPacket
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     SubChunkPacketHandler,
     HookPriority::Normal,
     ServerNetworkHandler,
@@ -224,7 +224,7 @@ LL_TYPED_INSTANCE_HOOK(
 }
 
 // SpawnParticleEffectPacket
-LL_TYPED_STATIC_HOOK(
+LL_TYPE_STATIC_HOOK(
     SpawnParticleEffectPacketHandler,
     HookPriority::Normal,
     SpawnParticleEffectPacket,
@@ -244,7 +244,7 @@ LL_TYPED_STATIC_HOOK(
 
 } // namespace sendpackethook
 
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     PlayerdieHandler,
     HookPriority::Normal,
     Player,
@@ -262,7 +262,7 @@ LL_TYPED_INSTANCE_HOOK(
 namespace receivepackethook {
 
 // when player in overworld and custom dimension will need
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     ServerNetworkHandlerPlayerActionPacketHandler,
     HookPriority::Normal,
     ServerNetworkHandler,
@@ -301,7 +301,7 @@ LL_TYPED_INSTANCE_HOOK(
 };
 } // namespace receivepackethook
 
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     LevelentityChangeDimensionHandler,
     HookPriority::Normal,
     Level,
@@ -322,7 +322,7 @@ LL_TYPED_INSTANCE_HOOK(
     FakeDimensionId::getInstance().teleportToCustomDimension((ServerPlayer&)entity, toId, entityPos.value());
 }
 
-LL_TYPED_INSTANCE_HOOK(
+LL_TYPE_INSTANCE_HOOK(
     LevelrequestPlayerChangeDimensionHandler,
     HookPriority::Normal,
     Level,
@@ -341,40 +341,25 @@ LL_TYPED_INSTANCE_HOOK(
         .teleportToCustomDimension((ServerPlayer&)player, changeRequest->mToDimensionId, changeRequest->mToPosition);
 }
 
-void EnableHook() {
-    sendpackethook::LoopbackPacketSendersendToClientHandler1::hook();
-    sendpackethook::LoopbackPacketSendersendToClientHandler2::hook();
-    sendpackethook::LoopbackPacketSendersendToClientsHandler::hook();
-    sendpackethook::SubChunkPacketHandler::hook();
-    sendpackethook::SpawnParticleEffectPacketHandler::hook();
-    sendpackethook::StartGamePacketHandler::hook();
-    sendpackethook::ChangeDimensionPacketHandler::hook();
-    PlayerdieHandler::hook();
-    LevelentityChangeDimensionHandler::hook();
-    LevelrequestPlayerChangeDimensionHandler::hook();
 
-    receivepackethook::ServerNetworkHandlerPlayerActionPacketHandler::hook();
-};
+using HookReg = memory::HookRegistrar<
+    sendpackethook::LoopbackPacketSendersendToClientHandler1,
+    sendpackethook::LoopbackPacketSendersendToClientHandler2,
+    sendpackethook::LoopbackPacketSendersendToClientsHandler,
+    sendpackethook::SubChunkPacketHandler,
+    sendpackethook::SpawnParticleEffectPacketHandler,
+    sendpackethook::StartGamePacketHandler,
+    sendpackethook::ChangeDimensionPacketHandler,
+    PlayerdieHandler,
+    LevelentityChangeDimensionHandler,
+    LevelrequestPlayerChangeDimensionHandler,
+    receivepackethook::ServerNetworkHandlerPlayerActionPacketHandler>;
 
-void DisableHook() {
-    sendpackethook::LoopbackPacketSendersendToClientHandler1::unhook();
-    sendpackethook::LoopbackPacketSendersendToClientHandler2::unhook();
-    sendpackethook::LoopbackPacketSendersendToClientsHandler::unhook();
-    sendpackethook::SubChunkPacketHandler::unhook();
-    sendpackethook::SpawnParticleEffectPacketHandler::unhook();
-    sendpackethook::StartGamePacketHandler::unhook();
-    sendpackethook::ChangeDimensionPacketHandler::unhook();
-    PlayerdieHandler::unhook();
-    LevelentityChangeDimensionHandler::unhook();
-    LevelrequestPlayerChangeDimensionHandler::unhook();
-
-    receivepackethook::ServerNetworkHandlerPlayerActionPacketHandler::unhook();
-}
 } // namespace CustomDimensionHookList
 
-FakeDimensionId::FakeDimensionId() { CustomDimensionHookList::EnableHook(); }
+FakeDimensionId::FakeDimensionId() { CustomDimensionHookList::HookReg::hook(); }
 
-FakeDimensionId::~FakeDimensionId() { CustomDimensionHookList::DisableHook(); }
+FakeDimensionId::~FakeDimensionId() { CustomDimensionHookList::HookReg::unhook(); }
 
 FakeDimensionId& FakeDimensionId::getInstance() {
     return *CustomDimensionManager::getInstance().fakeDimensionIdInstance;
@@ -449,8 +434,8 @@ bool FakeDimensionId::teleportToCustomDimension(ServerPlayer& player, DimensionT
         logger.warn("player->{} already at this id->{} dimension!", player.getNameTag(), dimensionType.id);
         return false;
     }
-    if (dimensionType < 3) {
-        logger.debug("This Dimension Id->{} is not More dimension id!!!", dimensionType.id);
+    if (dimensionType == 1 || dimensionType == 2) {
+        logger.debug("This dimension id->{} isn't custom dimension id!!!", dimensionType.id);
         return false;
     }
     if (inId >= 3 || inId == fakeDim) {
